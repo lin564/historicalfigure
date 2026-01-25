@@ -86,6 +86,12 @@ document.addEventListener('DOMContentLoaded', () => {
     speakBtn.addEventListener('click', speakLastBotMessage);
   }
 
+  // Set up stop button
+  const stopBtn = document.getElementById('stop-btn');
+  if (stopBtn) {
+    stopBtn.addEventListener('click', stopSpeech);
+  }
+
   // Initialize auto-speak setting
   initAutoSpeak();
 
@@ -94,6 +100,19 @@ document.addEventListener('DOMContentLoaded', () => {
     speechSynthesis.getVoices();
     speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
   }
+
+  // Set up export buttons
+  const exportTextBtn = document.getElementById('export-text-btn');
+  const exportPdfBtn = document.getElementById('export-pdf-btn');
+  if (exportTextBtn) {
+    exportTextBtn.addEventListener('click', exportAsText);
+  }
+  if (exportPdfBtn) {
+    exportPdfBtn.addEventListener('click', exportAsPDF);
+  }
+
+  // Set up voice speed control
+  initVoiceSpeedControl();
 });
 
 // Functions
@@ -473,6 +492,110 @@ const elevenLabsVoiceLibrary = {
   storyteller: 'ThT5KcBeYPX3keUQqHPh', // Dorothy - storyteller
 };
 
+// ============================================
+// DEFAULT PORTRAIT DATABASE
+// Using public domain images from Wikimedia Commons
+// ============================================
+const defaultPortraits = {
+  // Ancient Greek/Roman
+  'socrates': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bc/Socrate_du_Louvre.jpg/440px-Socrate_du_Louvre.jpg',
+  'plato': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Plato_Silanion_Musei_Capitolini_MC1377.jpg/440px-Plato_Silanion_Musei_Capitolini_MC1377.jpg',
+  'aristotle': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Aristotle_Altemps_Inv8575.jpg/440px-Aristotle_Altemps_Inv8575.jpg',
+  'julius caesar': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/Gaius_Iulius_Caesar_%28Vatican_Museum%29.jpg/440px-Gaius_Iulius_Caesar_%28Vatican_Museum%29.jpg',
+  'marcus aurelius': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/MSR-ra-61-b-1-DM.jpg/440px-MSR-ra-61-b-1-DM.jpg',
+
+  // Ancient Egyptian/Ptolemaic
+  'cleopatra': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Kleopatra-VII.-Altes-Museum-Berlin1.jpg/440px-Kleopatra-VII.-Altes-Museum-Berlin1.jpg',
+  'nefertiti': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/Nofretete_Neues_Museum.jpg/440px-Nofretete_Neues_Museum.jpg',
+
+  // Ancient conquerors
+  'alexander': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Alexander_the_Great_mosaic.jpg/440px-Alexander_the_Great_mosaic.jpg',
+  'alexander the great': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Alexander_the_Great_mosaic.jpg/440px-Alexander_the_Great_mosaic.jpg',
+  'genghis khan': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/YuanEmperorAlbumGenghisPortrait.jpg/440px-YuanEmperorAlbumGenghisPortrait.jpg',
+
+  // Renaissance
+  'leonardo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Leonardo_self.jpg/440px-Leonardo_self.jpg',
+  'leonardo da vinci': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Leonardo_self.jpg/440px-Leonardo_self.jpg',
+  'michelangelo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Miguel_%C3%81ngel%2C_por_Daniele_da_Volterra_%28detalle%29.jpg/440px-Miguel_%C3%81ngel%2C_por_Daniele_da_Volterra_%28detalle%29.jpg',
+  'galileo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Justus_Sustermans_-_Portrait_of_Galileo_Galilei%2C_1636.jpg/440px-Justus_Sustermans_-_Portrait_of_Galileo_Galilei%2C_1636.jpg',
+  'galileo galilei': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Justus_Sustermans_-_Portrait_of_Galileo_Galilei%2C_1636.jpg/440px-Justus_Sustermans_-_Portrait_of_Galileo_Galilei%2C_1636.jpg',
+
+  // British historical figures
+  'shakespeare': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Shakespeare.jpg/440px-Shakespeare.jpg',
+  'william shakespeare': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Shakespeare.jpg/440px-Shakespeare.jpg',
+  'elizabeth i': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Darnley_stage_3.jpg/440px-Darnley_stage_3.jpg',
+  'queen elizabeth i': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Darnley_stage_3.jpg/440px-Darnley_stage_3.jpg',
+  'queen victoria': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Queen_Victoria_by_Bassano.jpg/440px-Queen_Victoria_by_Bassano.jpg',
+  'winston churchill': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bc/Sir_Winston_Churchill_-_19086236948.jpg/440px-Sir_Winston_Churchill_-_19086236948.jpg',
+  'isaac newton': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Portrait_of_Sir_Isaac_Newton%2C_1689.jpg/440px-Portrait_of_Sir_Isaac_Newton%2C_1689.jpg',
+  'charles darwin': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Charles_Darwin_seated_crop.jpg/440px-Charles_Darwin_seated_crop.jpg',
+
+  // French historical figures
+  'napoleon': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Jacques-Louis_David_-_The_Emperor_Napoleon_in_His_Study_at_the_Tuileries_-_Google_Art_Project.jpg/440px-Jacques-Louis_David_-_The_Emperor_Napoleon_in_His_Study_at_the_Tuileries_-_Google_Art_Project.jpg',
+  'napoleon bonaparte': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Jacques-Louis_David_-_The_Emperor_Napoleon_in_His_Study_at_the_Tuileries_-_Google_Art_Project.jpg/440px-Jacques-Louis_David_-_The_Emperor_Napoleon_in_His_Study_at_the_Tuileries_-_Google_Art_Project.jpg',
+  'marie antoinette': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Marie-Antoinette%2C_1775_-_Mus%C3%A9e_Antoine_L%C3%A9cuyer.jpg/440px-Marie-Antoinette%2C_1775_-_Mus%C3%A9e_Antoine_L%C3%A9cuyer.jpg',
+  'joan of arc': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Joan_of_Arc_miniature_graded.jpg/440px-Joan_of_Arc_miniature_graded.jpg',
+  'voltaire': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/D%27apr%C3%A8s_Nicolas_de_Largilli%C3%A8re%2C_portrait_de_Voltaire_%28Institut_et_Mus%C3%A9e_Voltaire%29_-001.jpg/440px-D%27apr%C3%A8s_Nicolas_de_Largilli%C3%A8re%2C_portrait_de_Voltaire_%28Institut_et_Mus%C3%A9e_Voltaire%29_-001.jpg',
+
+  // American historical figures
+  'george washington': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Gilbert_Stuart_Williamstown_Portrait_of_George_Washington.jpg/440px-Gilbert_Stuart_Williamstown_Portrait_of_George_Washington.jpg',
+  'abraham lincoln': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Abraham_Lincoln_O-77_matte_collodion_print.jpg/440px-Abraham_Lincoln_O-77_matte_collodion_print.jpg',
+  'benjamin franklin': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Joseph_Duplessis_-_Benjamin_Franklin_-_Google_Art_Project.jpg/440px-Joseph_Duplessis_-_Benjamin_Franklin_-_Google_Art_Project.jpg',
+  'thomas jefferson': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Thomas_Jefferson_by_Rembrandt_Peale%2C_1800.jpg/440px-Thomas_Jefferson_by_Rembrandt_Peale%2C_1800.jpg',
+  'martin luther king': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Martin_Luther_King%2C_Jr..jpg/440px-Martin_Luther_King%2C_Jr..jpg',
+  'martin luther king jr': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Martin_Luther_King%2C_Jr..jpg/440px-Martin_Luther_King%2C_Jr..jpg',
+  'harriet tubman': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Harriet_Tubman_c1868-69_%28cropped%29.jpg/440px-Harriet_Tubman_c1868-69_%28cropped%29.jpg',
+
+  // Scientists and inventors
+  'albert einstein': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Einstein_1921_by_F_Schmutzer_-_restoration.jpg/440px-Einstein_1921_by_F_Schmutzer_-_restoration.jpg',
+  'einstein': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Einstein_1921_by_F_Schmutzer_-_restoration.jpg/440px-Einstein_1921_by_F_Schmutzer_-_restoration.jpg',
+  'marie curie': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Marie_Curie_c._1920s.jpg/440px-Marie_Curie_c._1920s.jpg',
+  'nikola tesla': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Tesla_circa_1890.jpeg/440px-Tesla_circa_1890.jpeg',
+  'thomas edison': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Thomas_Edison2.jpg/440px-Thomas_Edison2.jpg',
+
+  // Asian historical figures
+  'confucius': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Confucius_Tang_Dynasty.jpg/440px-Confucius_Tang_Dynasty.jpg',
+  'sun tzu': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Erta_Sun_Tzu.jpg/440px-Erta_Sun_Tzu.jpg',
+  'buddha': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Kamakura_Budda_Daibutsu_front_1885.jpg/440px-Kamakura_Budda_Daibutsu_front_1885.jpg',
+  'gandhi': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Mahatma-Gandhi%2C_studio%2C_1931.jpg/440px-Mahatma-Gandhi%2C_studio%2C_1931.jpg',
+  'mahatma gandhi': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Mahatma-Gandhi%2C_studio%2C_1931.jpg/440px-Mahatma-Gandhi%2C_studio%2C_1931.jpg',
+
+  // Additional figures
+  'pythagoras': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Kapitolinischer_Pythagoras_adjusted.jpg/440px-Kapitolinischer_Pythagoras_adjusted.jpg',
+  'moses': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/%27Moses%27_by_Michelangelo_JBU160.jpg/440px-%27Moses%27_by_Michelangelo_JBU160.jpg'
+};
+
+// Function to get default portrait for a historical figure
+function getDefaultPortrait(figureName) {
+  const nameLower = figureName.toLowerCase().trim();
+
+  // Direct match
+  if (defaultPortraits[nameLower]) {
+    return defaultPortraits[nameLower];
+  }
+
+  // Try partial matches (e.g., "Einstein" should match "albert einstein")
+  for (const [key, url] of Object.entries(defaultPortraits)) {
+    if (nameLower.includes(key) || key.includes(nameLower)) {
+      return url;
+    }
+  }
+
+  // Try matching just the last name or first name
+  const nameParts = nameLower.split(' ');
+  for (const part of nameParts) {
+    if (part.length > 3) { // Skip short words like "the", "of", etc.
+      for (const [key, url] of Object.entries(defaultPortraits)) {
+        if (key.includes(part)) {
+          return url;
+        }
+      }
+    }
+  }
+
+  return null;
+}
+
 // Function to determine voice characteristics from figure name
 function getVoiceProfileForFigure(figureName) {
   const nameLower = figureName.toLowerCase();
@@ -635,28 +758,49 @@ function initAutoSpeak() {
   }
 }
 
-// Update button state with colors
-function updateSpeakButtonState(state) {
+// Update button state with colors and show/hide stop button
+function updateSpeakButtonState(buttonState) {
   const speakBtn = document.getElementById('speak-btn');
+  const stopBtn = document.getElementById('stop-btn');
   if (!speakBtn) return;
 
   // Remove all state classes
   speakBtn.classList.remove('loading', 'ready', 'playing');
 
-  switch(state) {
+  switch(buttonState) {
     case 'loading':
       speakBtn.classList.add('loading');
+      speakBtn.classList.add('hidden');
+      if (stopBtn) stopBtn.classList.remove('hidden');
       break;
     case 'ready':
       speakBtn.classList.add('ready');
+      speakBtn.classList.add('hidden');
+      if (stopBtn) stopBtn.classList.remove('hidden');
       break;
     case 'playing':
       speakBtn.classList.add('playing');
+      speakBtn.classList.add('hidden');
+      if (stopBtn) stopBtn.classList.remove('hidden');
       break;
     default:
-      // Default state
+      // Default state - show speak button, hide stop button
+      speakBtn.classList.remove('hidden');
+      if (stopBtn) stopBtn.classList.add('hidden');
       break;
   }
+}
+
+// Function to stop speech
+function stopSpeech() {
+  const audioElement = document.getElementById('speech-audio');
+  if (audioElement) {
+    audioElement.pause();
+    audioElement.currentTime = 0;
+  }
+  isSpeaking = false;
+  updateSpeakButtonState('default');
+  console.log('Speech stopped');
 }
 
 // Function to generate speech using ElevenLabs
@@ -715,6 +859,11 @@ async function generateSpeech(text) {
 
     audioElement.src = audioUrl;
 
+    // Apply voice speed setting
+    const voiceSpeed = getVoiceSpeed();
+    audioElement.playbackRate = voiceSpeed;
+    console.log('Playing at speed:', voiceSpeed);
+
     // Show ready state (green) just before playing
     updateSpeakButtonState('ready');
 
@@ -766,8 +915,10 @@ async function createChatbot() {
     return;
   }
 
-  if (!state.image) {
-    alert('Please upload an image for your historical figure.');
+  // Check if we have an uploaded image OR a default portrait available
+  const hasDefaultPortrait = getDefaultPortrait(state.name) !== null;
+  if (!state.image && !hasDefaultPortrait) {
+    alert('Please upload an image for your historical figure (no default portrait found for this person).');
     return;
   }
 
@@ -799,7 +950,41 @@ async function createChatbot() {
   
   // Set up chat screen
   figureDisplayName.textContent = state.name;
-  figureDisplayImg.src = state.image;
+
+  // Get placeholder elements
+  const figurePlaceholder = document.getElementById('figure-placeholder');
+  const figureInitials = document.getElementById('figure-initials');
+
+  // Use uploaded image, or fall back to default portrait if available
+  if (state.image) {
+    figureDisplayImg.src = state.image;
+    figureDisplayImg.style.display = 'block';
+    if (figurePlaceholder) figurePlaceholder.classList.add('hidden');
+  } else {
+    const defaultPortrait = getDefaultPortrait(state.name);
+    if (defaultPortrait) {
+      figureDisplayImg.src = defaultPortrait;
+      figureDisplayImg.style.display = 'block';
+      if (figurePlaceholder) figurePlaceholder.classList.add('hidden');
+      console.log(`Using default portrait for ${state.name}`);
+    } else {
+      // No image and no default portrait - show initials placeholder
+      figureDisplayImg.style.display = 'none';
+      if (figurePlaceholder && figureInitials) {
+        // Generate initials from name
+        const initials = state.name
+          .split(' ')
+          .filter(word => word.length > 0)
+          .map(word => word[0].toUpperCase())
+          .slice(0, 2)
+          .join('');
+        figureInitials.textContent = initials;
+        figurePlaceholder.classList.remove('hidden');
+      }
+      console.log(`No portrait available for ${state.name}, showing initials`);
+    }
+  }
+
   messageInput.placeholder = `Ask ${state.name} a question...`;
   
   // Populate sources list
@@ -833,12 +1018,77 @@ async function createChatbot() {
     voiceDescription.textContent = 'Default voice selected';
   }
 
-  // Add welcome message
-  addMessage('bot', `Hello! I am ${state.name}. Feel free to ask me anything based on the documents you've provided.`);
-  
-  // Show chat screen
+  // Display educational "Learn More" links
+  displayEducationalLinks(state.name);
+
+  // Show chat screen first so user sees something happening
   configScreen.classList.add('hidden');
   chatScreen.classList.remove('hidden');
+
+  // Generate and display personalized welcome greeting with animated loading
+  const greetingMessage = document.createElement('div');
+  greetingMessage.className = 'message bot';
+  greetingMessage.innerHTML = `
+    <div class="message-bubble">
+      <div class="message-header">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        <span>${state.name}</span>
+      </div>
+      <div class="loading-indicator" id="greeting-loading">
+        <div class="quill-animation">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path>
+            <line x1="16" y1="8" x2="2" y2="22"></line>
+            <line x1="17.5" y1="15" x2="9" y2="15"></line>
+          </svg>
+        </div>
+        <div class="ink-drops">
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <span class="loading-text-animated">Preparing greeting...</span>
+      </div>
+      <p class="greeting-text hidden"></p>
+    </div>
+  `;
+  messagesContainer.appendChild(greetingMessage);
+
+  try {
+    const greeting = await generateWelcomeGreeting();
+    // Hide loading indicator and show greeting text
+    const loadingIndicator = greetingMessage.querySelector('#greeting-loading');
+    const greetingText = greetingMessage.querySelector('.greeting-text');
+    if (loadingIndicator) loadingIndicator.classList.add('hidden');
+    if (greetingText) {
+      greetingText.innerHTML = greeting;
+      greetingText.classList.remove('hidden');
+    }
+
+    // Auto-speak the greeting if enabled
+    if (autoSpeakEnabled && greeting) {
+      setTimeout(() => {
+        generateSpeech(greeting);
+      }, 500);
+    }
+
+    // Add starter questions after greeting
+    displayStarterQuestions();
+  } catch (error) {
+    console.error('Error with greeting:', error);
+    // Hide loading indicator and show fallback greeting
+    const loadingIndicator = greetingMessage.querySelector('#greeting-loading');
+    const greetingText = greetingMessage.querySelector('.greeting-text');
+    if (loadingIndicator) loadingIndicator.classList.add('hidden');
+    if (greetingText) {
+      greetingText.innerHTML = `Greetings! I am ${state.name}. I am honored to speak with you. What would you like to know?`;
+      greetingText.classList.remove('hidden');
+    }
+
+    // Add starter questions even on error
+    displayStarterQuestions();
+  }
 }
 
 function resetChatbot() {
@@ -866,7 +1116,7 @@ function resetChatbot() {
   configScreen.classList.remove('hidden');
 }
 
-function addMessage(role, content) {
+function addMessage(role, content, sourceInfo = null) {
   const message = document.createElement('div');
   message.className = `message ${role}`;
 
@@ -894,6 +1144,37 @@ function addMessage(role, content) {
 
   messageBubble.appendChild(messageHeader);
   messageBubble.appendChild(messageContent);
+
+  // Add fact-check indicator for bot messages
+  if (role === 'bot' && sourceInfo) {
+    const factCheckIndicator = document.createElement('div');
+    factCheckIndicator.className = `fact-check-indicator ${sourceInfo.type}`;
+
+    if (sourceInfo.type === 'document-based') {
+      factCheckIndicator.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+        <span>Based on uploaded documents</span>
+      `;
+    } else if (sourceInfo.type === 'knowledge-bank') {
+      factCheckIndicator.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+        <span>From knowledge bank</span>
+      `;
+    } else if (sourceInfo.type === 'ai-generated') {
+      factCheckIndicator.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+        <span>AI interpretation - verify facts</span>
+      `;
+    } else if (sourceInfo.type === 'mixed') {
+      factCheckIndicator.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+        <span>Documents + AI interpretation</span>
+      `;
+    }
+
+    messageBubble.appendChild(factCheckIndicator);
+  }
+
   message.appendChild(messageBubble);
   messagesContainer.appendChild(message);
 
@@ -918,7 +1199,7 @@ async function sendMessage() {
   addMessage('user', message);
   messageInput.value = '';
   
-  // Show loading indicator
+  // Show loading indicator with animated quill
   const loadingMessage = document.createElement('div');
   loadingMessage.className = 'message bot';
   loadingMessage.innerHTML = `
@@ -927,7 +1208,22 @@ async function sendMessage() {
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
         <span>${state.name}</span>
       </div>
-      <p>Thinking...</p>
+      <div class="loading-indicator">
+        <div class="quill-animation">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path>
+            <line x1="16" y1="8" x2="2" y2="22"></line>
+            <line x1="17.5" y1="15" x2="9" y2="15"></line>
+          </svg>
+        </div>
+        <div class="ink-drops">
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <span class="loading-text-animated">Composing thoughts...</span>
+      </div>
     </div>
   `;
   messagesContainer.appendChild(loadingMessage);
@@ -944,21 +1240,25 @@ async function sendMessage() {
       const documentContext = state.documents.map(doc => {
         return `Document: ${doc.name}\nContent: ${doc.content}\n\n`;
       }).join('');
-      
+
       // Generate enhanced demo response
       const demoResponse = await generateDemoResponse(documentContext, message);
-      
+
       // Remove loading message
       messagesContainer.removeChild(loadingMessage);
-      
-      // Add bot response to UI
-      addMessage('bot', demoResponse);
+
+      // Determine source type for demo mode
+      const hasKnowledgeBank = state.documents.some(doc => doc.isKnowledgeBank);
+      const sourceType = hasKnowledgeBank ? 'knowledge-bank' : 'document-based';
+
+      // Add bot response to UI with source indicator
+      addMessage('bot', demoResponse, { type: sourceType });
     } catch (error) {
       console.error('Error:', error);
       messagesContainer.removeChild(loadingMessage);
-      addMessage('bot', `I'm sorry, I encountered an error while processing your request.`);
+      addMessage('bot', `I'm sorry, I encountered an error while processing your request.`, { type: 'ai-generated' });
     }
-    
+
     return;
   }
   
@@ -1011,19 +1311,88 @@ async function sendMessage() {
     
     // Add response to conversation history
     state.conversation.push({
-      role: 'assistant', 
+      role: 'assistant',
       content: response
     });
     console.log("Added response to conversation history");
-    
-    // Add bot response to UI
-    addMessage('bot', response);
-    
+
+    // Determine source type for fact-check indicator
+    let sourceType = 'ai-generated';
+    const hasKnowledgeBank = state.documents.some(doc => doc.isKnowledgeBank);
+    const hasUploadedDocs = state.documents.some(doc => !doc.isKnowledgeBank);
+
+    if (relevantChunks.length > 0) {
+      // Found relevant content in documents
+      if (hasKnowledgeBank && hasUploadedDocs) {
+        sourceType = 'mixed';
+      } else if (hasKnowledgeBank) {
+        sourceType = 'knowledge-bank';
+      } else {
+        sourceType = 'document-based';
+      }
+    } else if (documentContext.length > 100) {
+      // Has documents but no specific chunks matched
+      sourceType = 'mixed';
+    }
+
+    // Add bot response to UI with source indicator
+    addMessage('bot', response, { type: sourceType });
+
   } catch (error) {
     console.error('Error during sendMessage:', error);
     messagesContainer.removeChild(loadingMessage);
-    addMessage('bot', `I'm sorry, I encountered an error while processing your request: ${error.message}`);
+    addMessage('bot', `I'm sorry, I encountered an error while processing your request: ${error.message}`, { type: 'ai-generated' });
   }
+}
+
+// Function to generate a personalized welcome greeting
+async function generateWelcomeGreeting() {
+  const workerUrl = 'https://historical-figure2-app.ultisim.workers.dev/';
+  const API_KEY = config.apiKey;
+
+  // Prepare document context
+  const documentContext = state.documents.map(doc => {
+    return `Document: ${doc.name}\nContent: ${doc.content}\n\n`;
+  }).join('');
+
+  const systemPrompt = `You are ${state.name}, a historical figure. Generate a brief, warm welcome greeting (2-3 sentences) introducing yourself to someone who wants to learn about you.
+
+IMPORTANT RULES:
+- Speak in first person AS the character
+- Be warm and inviting
+- Mention one interesting thing about yourself to spark curiosity
+- NO asterisks, NO stage directions, NO action descriptions
+- Keep it under 50 words
+- This will be spoken aloud, so write natural speech
+
+DOCUMENTS ABOUT YOU (use these for context):
+${documentContext.substring(0, 2000)}`;
+
+  try {
+    const response = await fetch(workerUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        apiKey: API_KEY,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: 'Please introduce yourself.' }],
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 150
+      })
+    });
+
+    if (!response.ok) throw new Error('API request failed');
+
+    const data = await response.json();
+    if (data.content && data.content[0] && data.content[0].text) {
+      return data.content[0].text;
+    }
+  } catch (error) {
+    console.error('Error generating greeting:', error);
+  }
+
+  // Fallback greeting if API fails
+  return `Greetings! I am ${state.name}. I am delighted to speak with you today. What would you like to know about my life and times?`;
 }
 
 // Function to call Claude API via Cloudflare Worker
@@ -1850,5 +2219,1147 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+// ============================================
+// CONVERSATION EXPORT FUNCTIONALITY
+// ============================================
+
+// Export conversation as plain text
+function exportAsText() {
+  if (state.conversation.length === 0) {
+    alert('No conversation to export yet. Start chatting first!');
+    return;
+  }
+
+  const date = new Date().toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+
+  let textContent = `═══════════════════════════════════════════════════════════════\n`;
+  textContent += `  CONVERSATION WITH ${state.name.toUpperCase()}\n`;
+  textContent += `  Historical Figure Chatbot\n`;
+  textContent += `  Exported: ${date}\n`;
+  textContent += `═══════════════════════════════════════════════════════════════\n\n`;
+
+  // Add conversation
+  state.conversation.forEach((msg, index) => {
+    const speaker = msg.role === 'user' ? 'You' : state.name;
+    textContent += `┌─────────────────────────────────────────────────────────────\n`;
+    textContent += `│ ${speaker}:\n`;
+    textContent += `└─────────────────────────────────────────────────────────────\n`;
+    textContent += `${msg.content}\n\n`;
+  });
+
+  textContent += `═══════════════════════════════════════════════════════════════\n`;
+  textContent += `  End of Conversation\n`;
+  textContent += `  Total messages: ${state.conversation.length}\n`;
+  textContent += `═══════════════════════════════════════════════════════════════\n`;
+
+  // Create and download file
+  const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `conversation-with-${state.name.toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.txt`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+
+  console.log('Conversation exported as text');
+}
+
+// Export conversation as PDF
+function exportAsPDF() {
+  if (state.conversation.length === 0) {
+    alert('No conversation to export yet. Start chatting first!');
+    return;
+  }
+
+  const date = new Date().toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+
+  // Create a printable HTML document
+  const printWindow = window.open('', '_blank');
+
+  let htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Conversation with ${state.name}</title>
+      <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+      <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+          font-family: 'Cormorant Garamond', Georgia, serif;
+          font-size: 12pt;
+          line-height: 1.6;
+          color: #2c2416;
+          padding: 40px;
+          max-width: 800px;
+          margin: 0 auto;
+        }
+        .header {
+          text-align: center;
+          border-bottom: 3px double #c9a227;
+          padding-bottom: 20px;
+          margin-bottom: 30px;
+        }
+        .header h1 {
+          font-family: 'Cinzel', serif;
+          font-size: 24pt;
+          color: #2c2416;
+          margin-bottom: 5px;
+        }
+        .header .subtitle {
+          font-style: italic;
+          color: #8b7355;
+          font-size: 11pt;
+        }
+        .header .date {
+          font-size: 10pt;
+          color: #8b7355;
+          margin-top: 10px;
+        }
+        .message {
+          margin-bottom: 25px;
+          page-break-inside: avoid;
+        }
+        .message-header {
+          font-family: 'Cinzel', serif;
+          font-weight: 600;
+          font-size: 11pt;
+          color: #c9a227;
+          margin-bottom: 5px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .message-header.user { color: #5c4a32; }
+        .message-header.bot { color: #8b6914; }
+        .message-content {
+          padding-left: 15px;
+          border-left: 2px solid #e8d48a;
+        }
+        .message.user .message-content {
+          border-left-color: #c9a227;
+        }
+        .footer {
+          margin-top: 40px;
+          padding-top: 20px;
+          border-top: 3px double #c9a227;
+          text-align: center;
+          font-size: 10pt;
+          color: #8b7355;
+        }
+        .ornament {
+          color: #c9a227;
+          font-size: 14pt;
+          margin: 0 10px;
+        }
+        @media print {
+          body { padding: 20px; }
+          .no-print { display: none; }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <h1>Conversation with ${state.name}</h1>
+        <p class="subtitle">Historical Figure Chatbot</p>
+        <p class="date">Exported: ${date}</p>
+      </div>
+  `;
+
+  // Add conversation messages
+  state.conversation.forEach((msg, index) => {
+    const isUser = msg.role === 'user';
+    const speaker = isUser ? 'You' : state.name;
+    const icon = isUser ? '👤' : '🏛️';
+
+    htmlContent += `
+      <div class="message ${isUser ? 'user' : 'bot'}">
+        <div class="message-header ${isUser ? 'user' : 'bot'}">
+          <span>${icon}</span>
+          <span>${speaker}</span>
+        </div>
+        <div class="message-content">
+          ${msg.content.replace(/\n/g, '<br>')}
+        </div>
+      </div>
+    `;
+  });
+
+  htmlContent += `
+      <div class="footer">
+        <span class="ornament">✦</span>
+        End of Conversation
+        <span class="ornament">✦</span>
+        <br>
+        Total messages: ${state.conversation.length}
+      </div>
+
+      <div class="no-print" style="text-align: center; margin-top: 30px;">
+        <button onclick="window.print()" style="
+          font-family: 'Cinzel', serif;
+          font-size: 14pt;
+          padding: 12px 30px;
+          background: linear-gradient(135deg, #c9a227 0%, #8b6914 100%);
+          color: white;
+          border: none;
+          border-radius: 8px;
+          cursor: pointer;
+        ">
+          Print / Save as PDF
+        </button>
+        <p style="margin-top: 10px; font-size: 10pt; color: #8b7355;">
+          Click the button above, then choose "Save as PDF" in the print dialog
+        </p>
+      </div>
+    </body>
+    </html>
+  `;
+
+  printWindow.document.write(htmlContent);
+  printWindow.document.close();
+
+  console.log('PDF export window opened');
+}
+
+// ============================================
+// STARTER QUESTIONS FUNCTIONALITY
+// ============================================
+
+// Database of starter questions for common historical figures
+const starterQuestionsDatabase = {
+  'cleopatra': [
+    "What was it like ruling Egypt as a woman?",
+    "Tell me about your relationship with Julius Caesar.",
+    "How did you maintain Egypt's independence from Rome?",
+    "What languages did you speak?"
+  ],
+  'albert einstein': [
+    "Can you explain relativity in simple terms?",
+    "What inspired your scientific discoveries?",
+    "What was your time at Princeton like?",
+    "Did you have any regrets about the atomic bomb?"
+  ],
+  'leonardo da vinci': [
+    "How did you come up with your inventions?",
+    "Tell me about painting the Mona Lisa.",
+    "What was it like working in Renaissance Italy?",
+    "Why did you leave so many works unfinished?"
+  ],
+  'julius caesar': [
+    "What was your greatest military victory?",
+    "How did you rise to power in Rome?",
+    "Tell me about crossing the Rubicon.",
+    "What were your reforms as dictator?"
+  ],
+  'socrates': [
+    "What is the meaning of a good life?",
+    "Why do you ask so many questions?",
+    "Tell me about your trial and death.",
+    "What did you teach your students?"
+  ],
+  'marie curie': [
+    "How did you discover radioactivity?",
+    "What challenges did you face as a woman in science?",
+    "Tell me about winning two Nobel Prizes.",
+    "What was your partnership with Pierre like?"
+  ],
+  'napoleon': [
+    "What was your greatest military campaign?",
+    "How did you reform France?",
+    "Tell me about your exile to Elba.",
+    "What was your relationship with Josephine?"
+  ],
+  'abraham lincoln': [
+    "How did you decide to issue the Emancipation Proclamation?",
+    "What kept you going during the darkest days of the Civil War?",
+    "Tell me about your childhood and education.",
+    "How did you develop your famous speaking style?"
+  ],
+  'shakespeare': [
+    "Where did you find inspiration for your plays?",
+    "What was theater like in Elizabethan England?",
+    "Which of your characters is most like you?",
+    "Tell me about the Globe Theatre."
+  ],
+  'gandhi': [
+    "How did you develop non-violent resistance?",
+    "What was your time in South Africa like?",
+    "Tell me about the Salt March.",
+    "How did you maintain hope during the struggle for independence?"
+  ]
+};
+
+// Generic starter questions for any historical figure
+const genericStarterQuestions = [
+  "What was daily life like in your time?",
+  "What was your greatest achievement?",
+  "What challenges did you face in your life?",
+  "What advice would you give to young people today?",
+  "Tell me about a pivotal moment in your life.",
+  "What do you wish people understood about your era?"
+];
+
+// ============================================
+// EDUCATIONAL "LEARN MORE" LINKS DATABASE
+// Curated educational resources for historical figures
+// ============================================
+const educationalLinksDatabase = {
+  'cleopatra': [
+    { name: 'Biography', url: 'https://www.britannica.com/biography/Cleopatra-queen-of-Egypt', type: 'encyclopedia' },
+    { name: 'History.com', url: 'https://www.history.com/topics/ancient-egypt/cleopatra', type: 'article' },
+    { name: 'National Geographic', url: 'https://www.nationalgeographic.com/history/article/cleopatra', type: 'article' },
+    { name: 'Khan Academy: Ancient Egypt', url: 'https://www.khanacademy.org/humanities/world-history/ancient-medieval/ancient-egypt/v/egyptian-history', type: 'video' }
+  ],
+  'albert einstein': [
+    { name: 'Nobel Prize Bio', url: 'https://www.nobelprize.org/prizes/physics/1921/einstein/biographical/', type: 'encyclopedia' },
+    { name: 'Britannica', url: 'https://www.britannica.com/biography/Albert-Einstein', type: 'encyclopedia' },
+    { name: 'Einstein Archives', url: 'https://www.einstein.caltech.edu/', type: 'archive' },
+    { name: 'Khan Academy: Relativity', url: 'https://www.khanacademy.org/science/physics/special-relativity', type: 'video' }
+  ],
+  'julius caesar': [
+    { name: 'Britannica', url: 'https://www.britannica.com/biography/Julius-Caesar-Roman-ruler', type: 'encyclopedia' },
+    { name: 'History.com', url: 'https://www.history.com/topics/ancient-rome/julius-caesar', type: 'article' },
+    { name: 'BBC History', url: 'https://www.bbc.co.uk/history/historic_figures/caesar_julius.shtml', type: 'article' },
+    { name: 'Khan Academy: Roman Republic', url: 'https://www.khanacademy.org/humanities/world-history/ancient-medieval/roman-a/v/rise-of-roman-republic', type: 'video' }
+  ],
+  'marie curie': [
+    { name: 'Nobel Prize Bio', url: 'https://www.nobelprize.org/prizes/physics/1903/marie-curie/biographical/', type: 'encyclopedia' },
+    { name: 'Britannica', url: 'https://www.britannica.com/biography/Marie-Curie', type: 'encyclopedia' },
+    { name: 'Biography.com', url: 'https://www.biography.com/scientist/marie-curie', type: 'article' },
+    { name: 'Khan Academy: Radioactivity', url: 'https://www.khanacademy.org/science/physics/quantum-physics/radioactive-decay/v/introduction-to-radioactive-decay', type: 'video' }
+  ],
+  'leonardo da vinci': [
+    { name: 'Britannica', url: 'https://www.britannica.com/biography/Leonardo-da-Vinci', type: 'encyclopedia' },
+    { name: 'Biography.com', url: 'https://www.biography.com/artist/leonardo-da-vinci', type: 'article' },
+    { name: 'National Gallery', url: 'https://www.nationalgallery.org.uk/artists/leonardo-da-vinci', type: 'museum' },
+    { name: 'Khan Academy: Renaissance', url: 'https://www.khanacademy.org/humanities/renaissance-reformation/high-ren-florence-rome/leonardo-da-vinci', type: 'video' }
+  ],
+  'abraham lincoln': [
+    { name: 'White House Bio', url: 'https://www.whitehouse.gov/about-the-white-house/presidents/abraham-lincoln/', type: 'government' },
+    { name: 'Britannica', url: 'https://www.britannica.com/biography/Abraham-Lincoln', type: 'encyclopedia' },
+    { name: 'History.com', url: 'https://www.history.com/topics/us-presidents/abraham-lincoln', type: 'article' },
+    { name: 'Lincoln Library', url: 'https://www.abrahamlincolnonline.org/', type: 'archive' }
+  ],
+  'george washington': [
+    { name: 'White House Bio', url: 'https://www.whitehouse.gov/about-the-white-house/presidents/george-washington/', type: 'government' },
+    { name: 'Mount Vernon', url: 'https://www.mountvernon.org/george-washington/', type: 'museum' },
+    { name: 'Britannica', url: 'https://www.britannica.com/biography/George-Washington', type: 'encyclopedia' },
+    { name: 'History.com', url: 'https://www.history.com/topics/us-presidents/george-washington', type: 'article' }
+  ],
+  'napoleon': [
+    { name: 'Britannica', url: 'https://www.britannica.com/biography/Napoleon-I', type: 'encyclopedia' },
+    { name: 'History.com', url: 'https://www.history.com/topics/france/napoleon', type: 'article' },
+    { name: 'BBC History', url: 'https://www.bbc.co.uk/history/historic_figures/bonaparte_napoleon.shtml', type: 'article' },
+    { name: 'Napoleon Foundation', url: 'https://www.napoleon.org/en/history-of-the-two-empires/', type: 'archive' }
+  ],
+  'william shakespeare': [
+    { name: 'Britannica', url: 'https://www.britannica.com/biography/William-Shakespeare', type: 'encyclopedia' },
+    { name: 'Folger Library', url: 'https://www.folger.edu/explore/shakespeares-works/', type: 'archive' },
+    { name: 'Shakespeare Birthplace Trust', url: 'https://www.shakespeare.org.uk/', type: 'museum' },
+    { name: 'Khan Academy: Shakespeare', url: 'https://www.khanacademy.org/humanities/renaissance-reformation/renaissance-art-tutorial/late-renaissance-venice/v/shakespeare-an-introduction', type: 'video' }
+  ],
+  'mahatma gandhi': [
+    { name: 'Britannica', url: 'https://www.britannica.com/biography/Mahatma-Gandhi', type: 'encyclopedia' },
+    { name: 'Biography.com', url: 'https://www.biography.com/activist/mahatma-gandhi', type: 'article' },
+    { name: 'Gandhi Heritage Portal', url: 'https://www.gandhiheritageportal.org/', type: 'archive' },
+    { name: 'History.com', url: 'https://www.history.com/topics/india/mahatma-gandhi', type: 'article' }
+  ],
+  'socrates': [
+    { name: 'Stanford Encyclopedia', url: 'https://plato.stanford.edu/entries/socrates/', type: 'encyclopedia' },
+    { name: 'Britannica', url: 'https://www.britannica.com/biography/Socrates', type: 'encyclopedia' },
+    { name: 'Khan Academy: Greek Philosophy', url: 'https://www.khanacademy.org/humanities/world-history/ancient-medieval/classical-greece/v/socrates', type: 'video' }
+  ],
+  'martin luther king': [
+    { name: 'King Center', url: 'https://thekingcenter.org/about-tkc/martin-luther-king-jr/', type: 'archive' },
+    { name: 'Britannica', url: 'https://www.britannica.com/biography/Martin-Luther-King-Jr', type: 'encyclopedia' },
+    { name: 'History.com', url: 'https://www.history.com/topics/black-history/martin-luther-king-jr', type: 'article' },
+    { name: 'Stanford MLK Research', url: 'https://kinginstitute.stanford.edu/', type: 'archive' }
+  ],
+  'isaac newton': [
+    { name: 'Britannica', url: 'https://www.britannica.com/biography/Isaac-Newton', type: 'encyclopedia' },
+    { name: 'Biography.com', url: 'https://www.biography.com/scientist/isaac-newton', type: 'article' },
+    { name: 'Newton Project', url: 'https://www.newtonproject.ox.ac.uk/', type: 'archive' },
+    { name: 'Khan Academy: Physics', url: 'https://www.khanacademy.org/science/physics/forces-newtons-laws', type: 'video' }
+  ],
+  'queen elizabeth i': [
+    { name: 'Britannica', url: 'https://www.britannica.com/biography/Elizabeth-I', type: 'encyclopedia' },
+    { name: 'Royal Collection Trust', url: 'https://www.rct.uk/collection/themes/exhibitions/elizabeth-i/the-queens-gallery-palace-of-holyroodhouse', type: 'museum' },
+    { name: 'BBC History', url: 'https://www.bbc.co.uk/history/historic_figures/elizabeth_i_queen.shtml', type: 'article' },
+    { name: 'History.com', url: 'https://www.history.com/topics/british-history/queen-elizabeth', type: 'article' }
+  ],
+  'harriet tubman': [
+    { name: 'Britannica', url: 'https://www.britannica.com/biography/Harriet-Tubman', type: 'encyclopedia' },
+    { name: 'National Park Service', url: 'https://www.nps.gov/hatu/index.htm', type: 'government' },
+    { name: 'Biography.com', url: 'https://www.biography.com/activist/harriet-tubman', type: 'article' },
+    { name: 'History.com', url: 'https://www.history.com/topics/black-history/harriet-tubman', type: 'article' }
+  ]
+};
+
+// Get icon for link type
+function getLinkTypeIcon(type) {
+  const icons = {
+    encyclopedia: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>',
+    article: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>',
+    video: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>',
+    museum: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>',
+    archive: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>',
+    government: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01"/><path d="M9 12v.01"/><path d="M9 15v.01"/><path d="M9 18v.01"/></svg>'
+  };
+  return icons[type] || icons.article;
+}
+
+// Get educational links for a figure
+function getEducationalLinks(figureName) {
+  const nameLower = figureName.toLowerCase().trim();
+
+  // Check for exact or partial match in database
+  for (const [key, links] of Object.entries(educationalLinksDatabase)) {
+    if (nameLower.includes(key) || key.includes(nameLower)) {
+      return links;
+    }
+  }
+
+  // Try matching individual words (for names like "Albert Einstein" matching "einstein")
+  const nameParts = nameLower.split(' ');
+  for (const part of nameParts) {
+    if (part.length > 3) {
+      for (const [key, links] of Object.entries(educationalLinksDatabase)) {
+        if (key.includes(part)) {
+          return links;
+        }
+      }
+    }
+  }
+
+  // Return generic educational resources if no specific match
+  return [
+    { name: 'Wikipedia Search', url: `https://en.wikipedia.org/wiki/Special:Search?search=${encodeURIComponent(figureName)}`, type: 'encyclopedia' },
+    { name: 'Britannica Search', url: `https://www.britannica.com/search?query=${encodeURIComponent(figureName)}`, type: 'encyclopedia' },
+    { name: 'History.com', url: 'https://www.history.com/', type: 'article' }
+  ];
+}
+
+// Display educational links in the sidebar
+function displayEducationalLinks(figureName) {
+  const section = document.getElementById('learn-more-section');
+  const list = document.getElementById('learn-more-list');
+
+  if (!section || !list) return;
+
+  const links = getEducationalLinks(figureName);
+
+  if (links && links.length > 0) {
+    list.innerHTML = '';
+
+    links.forEach(link => {
+      const li = document.createElement('li');
+      li.className = 'learn-more-link';
+      li.innerHTML = `
+        <a href="${link.url}" target="_blank" rel="noopener noreferrer" title="Open ${link.name} in new tab">
+          ${getLinkTypeIcon(link.type)}
+          <span>${link.name}</span>
+          <svg class="external-icon" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+        </a>
+      `;
+      list.appendChild(li);
+    });
+
+    section.classList.remove('hidden');
+  } else {
+    section.classList.add('hidden');
+  }
+}
+
+// Function to get starter questions for a figure
+function getStarterQuestions(figureName) {
+  const nameLower = figureName.toLowerCase().trim();
+
+  // Check for exact or partial match in database
+  for (const [key, questions] of Object.entries(starterQuestionsDatabase)) {
+    if (nameLower.includes(key) || key.includes(nameLower)) {
+      return questions;
+    }
+  }
+
+  // Try matching individual words
+  const nameParts = nameLower.split(' ');
+  for (const part of nameParts) {
+    if (part.length > 3) {
+      for (const [key, questions] of Object.entries(starterQuestionsDatabase)) {
+        if (key.includes(part)) {
+          return questions;
+        }
+      }
+    }
+  }
+
+  // Return a random selection of generic questions
+  const shuffled = [...genericStarterQuestions].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, 4);
+}
+
+// Function to display starter questions in the chat
+function displayStarterQuestions() {
+  const questions = getStarterQuestions(state.name);
+
+  const starterDiv = document.createElement('div');
+  starterDiv.className = 'starter-questions';
+  starterDiv.id = 'starter-questions';
+  starterDiv.innerHTML = `
+    <div class="starter-questions-header">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+      </svg>
+      Suggested Questions
+    </div>
+    <div class="starter-questions-list">
+      ${questions.map(q => `<button class="starter-question-btn" data-question="${q.replace(/"/g, '&quot;')}">${q}</button>`).join('')}
+    </div>
+  `;
+
+  messagesContainer.appendChild(starterDiv);
+
+  // Add click handlers for starter questions
+  starterDiv.querySelectorAll('.starter-question-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const question = btn.dataset.question;
+      messageInput.value = question;
+
+      // Remove the starter questions
+      starterDiv.remove();
+
+      // Send the message
+      sendMessage();
+    });
+  });
+
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+// ============================================
+// VOICE SPEED CONTROL
+// ============================================
+
+let voiceSpeed = 1.0;
+
+// Initialize voice speed control
+function initVoiceSpeedControl() {
+  const speedSlider = document.getElementById('voice-speed');
+  const speedValue = document.getElementById('speed-value');
+
+  if (!speedSlider || !speedValue) return;
+
+  // Load saved speed from localStorage
+  const savedSpeed = localStorage.getItem('voiceSpeed');
+  if (savedSpeed) {
+    voiceSpeed = parseFloat(savedSpeed);
+    speedSlider.value = voiceSpeed;
+    speedValue.textContent = voiceSpeed.toFixed(1) + 'x';
+  }
+
+  // Update speed when slider changes
+  speedSlider.addEventListener('input', (e) => {
+    voiceSpeed = parseFloat(e.target.value);
+    speedValue.textContent = voiceSpeed.toFixed(1) + 'x';
+    localStorage.setItem('voiceSpeed', voiceSpeed);
+
+    // If audio is currently playing, update its speed in real-time
+    const audioElement = document.getElementById('speech-audio');
+    if (audioElement && !audioElement.paused) {
+      audioElement.playbackRate = voiceSpeed;
+    }
+
+    console.log('Voice speed set to:', voiceSpeed);
+  });
+}
+
+// Get current voice speed
+function getVoiceSpeed() {
+  return voiceSpeed;
+}
+
+// ============================================
+// QUIZ MODE
+// ============================================
+
+// Quiz state
+let quizState = {
+  questions: [],
+  currentQuestion: 0,
+  score: 0,
+  answers: [],
+  isActive: false
+};
+
+// Initialize quiz event listeners
+function initQuizMode() {
+  const startBtn = document.getElementById('start-quiz-btn');
+  const closeBtn = document.getElementById('close-quiz-btn');
+  const retakeBtn = document.getElementById('retake-quiz-btn');
+  const finishBtn = document.getElementById('finish-quiz-btn');
+
+  if (startBtn) {
+    startBtn.addEventListener('click', startQuiz);
+  }
+  if (closeBtn) {
+    closeBtn.addEventListener('click', closeQuiz);
+  }
+  if (retakeBtn) {
+    retakeBtn.addEventListener('click', retakeQuiz);
+  }
+  if (finishBtn) {
+    finishBtn.addEventListener('click', closeQuiz);
+  }
+}
+
+// Start the quiz
+async function startQuiz() {
+  console.log('Starting quiz...');
+
+  // Check if there's enough conversation content
+  if (state.conversation.length < 2) {
+    alert('Please have a conversation with the historical figure first before taking the quiz!');
+    return;
+  }
+
+  // Reset quiz state
+  quizState = {
+    questions: [],
+    currentQuestion: 0,
+    score: 0,
+    answers: [],
+    isActive: true
+  };
+
+  // Show modal
+  const modal = document.getElementById('quiz-modal');
+  const loading = document.getElementById('quiz-loading');
+  const content = document.getElementById('quiz-content');
+  const results = document.getElementById('quiz-results');
+  const figureName = document.getElementById('quiz-figure-name');
+
+  modal.classList.remove('hidden');
+  loading.classList.remove('hidden');
+  content.classList.add('hidden');
+  results.classList.add('hidden');
+
+  if (figureName) {
+    figureName.textContent = state.name;
+  }
+
+  // Update progress
+  updateQuizProgress(0, 5);
+
+  try {
+    // Generate quiz questions
+    const questions = await generateQuizQuestions();
+    quizState.questions = questions;
+
+    // Hide loading, show content
+    loading.classList.add('hidden');
+    content.classList.remove('hidden');
+
+    // Display first question
+    displayQuestion(0);
+  } catch (error) {
+    console.error('Error generating quiz:', error);
+    alert('Failed to generate quiz. Please try again.');
+    closeQuiz();
+  }
+}
+
+// Generate quiz questions using Claude API
+async function generateQuizQuestions() {
+  // Gather conversation context
+  const conversationText = state.conversation
+    .map(msg => `${msg.role === 'user' ? 'Student' : state.name}: ${msg.content}`)
+    .join('\n');
+
+  // Gather document context (first few chunks)
+  const documentContext = state.chunks
+    .slice(0, 10)
+    .map(chunk => chunk.text)
+    .join('\n\n');
+
+  const prompt = `You are creating an educational quiz about ${state.name} for a student who has been having a conversation with a chatbot simulating this historical figure.
+
+Based on the conversation and source documents below, generate exactly 5 quiz questions that test the student's understanding.
+
+CONVERSATION:
+${conversationText}
+
+SOURCE DOCUMENTS:
+${documentContext.substring(0, 3000)}
+
+REQUIREMENTS:
+1. Create 3 multiple-choice questions and 2 short-answer questions
+2. Questions should be based on facts discussed in the conversation or from the source documents
+3. For multiple-choice: provide 4 options (A, B, C, D) with only one correct answer
+4. For short-answer: the answer should be 1-3 sentences
+5. Mix difficulty levels: 2 easy, 2 medium, 1 harder
+6. Focus on historically accurate information
+
+Return ONLY a valid JSON array with this exact format (no markdown, no explanation):
+[
+  {
+    "type": "multiple-choice",
+    "question": "Question text here?",
+    "options": ["Option A", "Option B", "Option C", "Option D"],
+    "correctIndex": 0,
+    "explanation": "Brief explanation of why this is correct"
+  },
+  {
+    "type": "short-answer",
+    "question": "Question text here?",
+    "sampleAnswer": "A good answer would mention...",
+    "keyPoints": ["point 1", "point 2"]
+  }
+]`;
+
+  try {
+    const response = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: prompt,
+        conversationHistory: [],
+        systemPrompt: 'You are a quiz generator. Return only valid JSON arrays, no markdown formatting.'
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error('API request failed');
+    }
+
+    const data = await response.json();
+    let responseText = data.response || data.content || '';
+
+    // Clean up response - remove markdown code blocks if present
+    responseText = responseText.trim();
+    if (responseText.startsWith('```json')) {
+      responseText = responseText.slice(7);
+    }
+    if (responseText.startsWith('```')) {
+      responseText = responseText.slice(3);
+    }
+    if (responseText.endsWith('```')) {
+      responseText = responseText.slice(0, -3);
+    }
+    responseText = responseText.trim();
+
+    const questions = JSON.parse(responseText);
+
+    if (!Array.isArray(questions) || questions.length === 0) {
+      throw new Error('Invalid questions format');
+    }
+
+    return questions;
+  } catch (error) {
+    console.error('Error parsing quiz questions:', error);
+    // Return fallback questions if API fails
+    return generateFallbackQuestions();
+  }
+}
+
+// Fallback questions if API fails
+function generateFallbackQuestions() {
+  return [
+    {
+      type: 'multiple-choice',
+      question: `In what era did ${state.name} live?`,
+      options: ['Ancient times', 'Medieval period', 'Renaissance', 'Modern era'],
+      correctIndex: 0,
+      explanation: 'This historical figure lived in ancient times.'
+    },
+    {
+      type: 'multiple-choice',
+      question: `What was ${state.name} best known for?`,
+      options: ['Their leadership', 'Their discoveries', 'Their writings', 'Their art'],
+      correctIndex: 0,
+      explanation: 'They were primarily known for their leadership.'
+    },
+    {
+      type: 'multiple-choice',
+      question: `How did ${state.name} influence history?`,
+      options: ['Through military conquests', 'Through philosophical ideas', 'Through scientific discoveries', 'Through political reforms'],
+      correctIndex: 1,
+      explanation: 'Their philosophical ideas had lasting impact.'
+    },
+    {
+      type: 'short-answer',
+      question: `What is one important lesson we can learn from ${state.name}?`,
+      sampleAnswer: 'One important lesson is the value of perseverance and dedication to one\'s beliefs.',
+      keyPoints: ['perseverance', 'dedication', 'beliefs', 'values']
+    },
+    {
+      type: 'short-answer',
+      question: `Describe one challenge that ${state.name} faced during their lifetime.`,
+      sampleAnswer: 'They faced opposition from those who disagreed with their ideas and methods.',
+      keyPoints: ['challenge', 'opposition', 'difficulty', 'overcome']
+    }
+  ];
+}
+
+// Display a question
+function displayQuestion(index) {
+  const container = document.getElementById('quiz-question-container');
+  const question = quizState.questions[index];
+
+  if (!question) return;
+
+  updateQuizProgress(index + 1, quizState.questions.length);
+
+  if (question.type === 'multiple-choice') {
+    container.innerHTML = `
+      <div class="quiz-question" data-index="${index}">
+        <div class="question-type-badge multiple-choice">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+          Multiple Choice
+        </div>
+        <p class="question-text">${question.question}</p>
+        <div class="quiz-options">
+          ${question.options.map((opt, i) => `
+            <div class="quiz-option" data-option="${i}">
+              <span class="option-letter">${String.fromCharCode(65 + i)}</span>
+              <span class="option-text">${opt}</span>
+            </div>
+          `).join('')}
+        </div>
+        <div id="feedback-area"></div>
+      </div>
+    `;
+
+    // Add click handlers
+    container.querySelectorAll('.quiz-option').forEach(option => {
+      option.addEventListener('click', () => handleMultipleChoiceAnswer(index, parseInt(option.dataset.option)));
+    });
+  } else if (question.type === 'short-answer') {
+    container.innerHTML = `
+      <div class="quiz-question" data-index="${index}">
+        <div class="question-type-badge short-answer">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+          Short Answer
+        </div>
+        <p class="question-text">${question.question}</p>
+        <div class="short-answer-container">
+          <textarea class="short-answer-input" id="short-answer-input" placeholder="Type your answer here..." rows="4"></textarea>
+          <button class="submit-answer-btn" id="submit-short-answer">Submit Answer</button>
+        </div>
+        <div id="feedback-area"></div>
+      </div>
+    `;
+
+    // Add submit handler
+    document.getElementById('submit-short-answer').addEventListener('click', () => {
+      const answer = document.getElementById('short-answer-input').value.trim();
+      if (answer) {
+        handleShortAnswer(index, answer);
+      }
+    });
+  }
+}
+
+// Handle multiple choice answer
+function handleMultipleChoiceAnswer(questionIndex, selectedOption) {
+  const question = quizState.questions[questionIndex];
+  const options = document.querySelectorAll('.quiz-option');
+  const feedbackArea = document.getElementById('feedback-area');
+
+  // Disable all options
+  options.forEach(opt => {
+    opt.classList.add('disabled');
+    opt.style.pointerEvents = 'none';
+  });
+
+  // Mark correct and incorrect
+  const isCorrect = selectedOption === question.correctIndex;
+
+  options[selectedOption].classList.add(isCorrect ? 'correct' : 'incorrect');
+  options[selectedOption].innerHTML += `
+    <span class="option-icon ${isCorrect ? 'correct-icon' : 'incorrect-icon'}">
+      ${isCorrect
+        ? '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>'
+        : '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>'
+      }
+    </span>
+  `;
+
+  // Show correct answer if wrong
+  if (!isCorrect) {
+    options[question.correctIndex].classList.add('correct');
+    options[question.correctIndex].innerHTML += `
+      <span class="option-icon correct-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      </span>
+    `;
+  }
+
+  // Update score
+  if (isCorrect) {
+    quizState.score++;
+  }
+  quizState.answers.push({ questionIndex, correct: isCorrect });
+
+  // Show feedback
+  feedbackArea.innerHTML = `
+    <div class="feedback-message ${isCorrect ? 'correct' : 'incorrect'}">
+      <div class="feedback-header">
+        ${isCorrect
+          ? '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Correct!'
+          : '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Not quite right'
+        }
+      </div>
+      <p>${question.explanation || (isCorrect ? 'Great job!' : `The correct answer was: ${question.options[question.correctIndex]}`)}</p>
+    </div>
+    ${getNextButton(questionIndex)}
+  `;
+
+  // Add next button handler
+  const nextBtn = document.getElementById('next-question-btn');
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => goToNextQuestion(questionIndex));
+  }
+}
+
+// Handle short answer
+async function handleShortAnswer(questionIndex, answer) {
+  const question = quizState.questions[questionIndex];
+  const feedbackArea = document.getElementById('feedback-area');
+  const submitBtn = document.getElementById('submit-short-answer');
+  const textarea = document.getElementById('short-answer-input');
+
+  // Disable input
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Evaluating...';
+  textarea.disabled = true;
+
+  // Evaluate the answer using AI
+  let evaluation;
+  try {
+    evaluation = await evaluateShortAnswer(question, answer);
+  } catch (error) {
+    console.error('Error evaluating answer:', error);
+    evaluation = {
+      correct: false,
+      partial: true,
+      feedback: 'Your answer has been recorded. Compare it with the sample answer below.',
+      score: 0.5
+    };
+  }
+
+  // Update score (short answers can be partial credit)
+  if (evaluation.correct) {
+    quizState.score++;
+  } else if (evaluation.partial) {
+    quizState.score += 0.5;
+  }
+  quizState.answers.push({ questionIndex, correct: evaluation.correct, partial: evaluation.partial });
+
+  // Show feedback
+  const feedbackClass = evaluation.correct ? 'correct' : (evaluation.partial ? 'partial' : 'incorrect');
+  const feedbackIcon = evaluation.correct
+    ? '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>'
+    : (evaluation.partial
+      ? '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>'
+      : '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>');
+
+  const feedbackTitle = evaluation.correct ? 'Excellent!' : (evaluation.partial ? 'Good effort!' : 'Needs improvement');
+
+  feedbackArea.innerHTML = `
+    <div class="feedback-message ${feedbackClass}">
+      <div class="feedback-header">
+        ${feedbackIcon} ${feedbackTitle}
+      </div>
+      <p>${evaluation.feedback}</p>
+      <p style="margin-top: 0.5rem; font-style: italic;"><strong>Sample answer:</strong> ${question.sampleAnswer}</p>
+    </div>
+    ${getNextButton(questionIndex)}
+  `;
+
+  // Add next button handler
+  const nextBtn = document.getElementById('next-question-btn');
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => goToNextQuestion(questionIndex));
+  }
+}
+
+// Evaluate short answer using AI
+async function evaluateShortAnswer(question, studentAnswer) {
+  const prompt = `Evaluate this student's answer to a quiz question about ${state.name}.
+
+QUESTION: ${question.question}
+
+SAMPLE ANSWER: ${question.sampleAnswer}
+
+KEY POINTS TO LOOK FOR: ${question.keyPoints ? question.keyPoints.join(', ') : 'accurate information'}
+
+STUDENT'S ANSWER: ${studentAnswer}
+
+Evaluate if the student's answer is correct, partially correct, or incorrect. Be encouraging but accurate.
+
+Return ONLY a valid JSON object (no markdown):
+{
+  "correct": true/false,
+  "partial": true/false,
+  "feedback": "Brief encouraging feedback explaining what they got right/wrong"
+}`;
+
+  try {
+    const response = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: prompt,
+        conversationHistory: [],
+        systemPrompt: 'You are an educational quiz grader. Return only valid JSON, no markdown.'
+      })
+    });
+
+    const data = await response.json();
+    let responseText = data.response || data.content || '';
+
+    // Clean up response
+    responseText = responseText.trim();
+    if (responseText.startsWith('```json')) responseText = responseText.slice(7);
+    if (responseText.startsWith('```')) responseText = responseText.slice(3);
+    if (responseText.endsWith('```')) responseText = responseText.slice(0, -3);
+    responseText = responseText.trim();
+
+    return JSON.parse(responseText);
+  } catch (error) {
+    console.error('Error evaluating answer:', error);
+    // Simple keyword-based fallback
+    const answerLower = studentAnswer.toLowerCase();
+    const keyPoints = question.keyPoints || [];
+    const matchedPoints = keyPoints.filter(point => answerLower.includes(point.toLowerCase()));
+
+    if (matchedPoints.length >= keyPoints.length * 0.7) {
+      return { correct: true, partial: false, feedback: 'Good answer! You covered the main points.' };
+    } else if (matchedPoints.length >= keyPoints.length * 0.3) {
+      return { correct: false, partial: true, feedback: 'You\'re on the right track, but some key details are missing.' };
+    } else {
+      return { correct: false, partial: false, feedback: 'Review the topic and try to include more specific details.' };
+    }
+  }
+}
+
+// Get next button HTML
+function getNextButton(currentIndex) {
+  const isLast = currentIndex >= quizState.questions.length - 1;
+  return `
+    <button class="next-question-btn" id="next-question-btn">
+      ${isLast ? 'See Results' : 'Next Question'}
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+    </button>
+  `;
+}
+
+// Go to next question or show results
+function goToNextQuestion(currentIndex) {
+  const nextIndex = currentIndex + 1;
+
+  if (nextIndex >= quizState.questions.length) {
+    showQuizResults();
+  } else {
+    quizState.currentQuestion = nextIndex;
+    displayQuestion(nextIndex);
+  }
+}
+
+// Update progress bar
+function updateQuizProgress(current, total) {
+  const fill = document.getElementById('quiz-progress-fill');
+  const text = document.getElementById('quiz-progress-text');
+
+  if (fill) {
+    fill.style.width = `${(current / total) * 100}%`;
+  }
+  if (text) {
+    text.textContent = `Question ${current} of ${total}`;
+  }
+}
+
+// Show quiz results
+function showQuizResults() {
+  const content = document.getElementById('quiz-content');
+  const results = document.getElementById('quiz-results');
+  const scoreCircle = document.getElementById('score-circle');
+  const scorePercentage = document.getElementById('score-percentage');
+  const resultsMessage = document.getElementById('results-message');
+  const correctCount = document.getElementById('correct-count');
+  const incorrectCount = document.getElementById('incorrect-count');
+
+  content.classList.add('hidden');
+  results.classList.remove('hidden');
+
+  const totalQuestions = quizState.questions.length;
+  const score = quizState.score;
+  const percentage = Math.round((score / totalQuestions) * 100);
+
+  // Update score display
+  scorePercentage.textContent = `${percentage}%`;
+
+  // Set score circle class based on performance
+  scoreCircle.className = 'score-circle';
+  if (percentage >= 80) {
+    scoreCircle.classList.add('excellent');
+    resultsMessage.textContent = 'Excellent work! You really know your history!';
+  } else if (percentage >= 60) {
+    scoreCircle.classList.add('good');
+    resultsMessage.textContent = 'Good job! Keep learning!';
+  } else if (percentage >= 40) {
+    scoreCircle.classList.add('average');
+    resultsMessage.textContent = 'Nice effort! Try chatting more to learn more.';
+  } else {
+    scoreCircle.classList.add('needs-work');
+    resultsMessage.textContent = 'Keep practicing! Chat with the figure to learn more.';
+  }
+
+  // Count correct/incorrect
+  const correct = quizState.answers.filter(a => a.correct).length;
+  const partial = quizState.answers.filter(a => a.partial && !a.correct).length;
+  const incorrect = totalQuestions - correct - partial;
+
+  correctCount.textContent = correct + (partial > 0 ? ` (+${partial} partial)` : '');
+  incorrectCount.textContent = incorrect;
+
+  // Update progress to 100%
+  updateQuizProgress(totalQuestions, totalQuestions);
+}
+
+// Close quiz modal
+function closeQuiz() {
+  const modal = document.getElementById('quiz-modal');
+  modal.classList.add('hidden');
+  quizState.isActive = false;
+}
+
+// Retake quiz
+function retakeQuiz() {
+  const results = document.getElementById('quiz-results');
+  results.classList.add('hidden');
+  startQuiz();
+}
+
+// Initialize quiz mode when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+  initQuizMode();
+});
+
 // Log that script has fully loaded
-console.log("App.js v2.3 - Fixed asterisk removal + stronger no-stage-directions prompt");
+console.log("App.js v2.7 - Added Quiz Mode");

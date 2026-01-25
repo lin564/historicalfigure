@@ -1,0 +1,1261 @@
+/* ============================================
+   CLASSROOM MODE STYLES
+   ============================================ */
+
+/* CSS Variables - inheriting from main styles */
+:root {
+    --classroom-bg: #f8f6f1;
+    --sidebar-bg: #2c3e50;
+    --sidebar-text: #ecf0f1;
+    --accent-blue: #3498db;
+    --accent-green: #27ae60;
+    --accent-purple: #9b59b6;
+    --accent-orange: #e67e22;
+}
+
+/* Base Layout */
+#classroom-app {
+    min-height: 100vh;
+    background: var(--classroom-bg);
+}
+
+/* ============================================
+   ROLE SELECTION SCREEN
+   ============================================ */
+.role-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: linear-gradient(135deg, var(--parchment) 0%, var(--parchment-light) 100%);
+}
+
+.role-card {
+    background: white;
+    border-radius: 20px;
+    padding: 3rem;
+    max-width: 500px;
+    width: 100%;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    border: 3px solid var(--gold);
+    text-align: center;
+}
+
+.role-header {
+    margin-bottom: 2rem;
+}
+
+.role-header svg {
+    color: var(--gold);
+    margin-bottom: 1rem;
+}
+
+.role-header h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 1.8rem;
+    color: var(--ink);
+    margin: 0 0 0.5rem;
+}
+
+.role-header .subtitle {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem;
+    color: var(--ink-muted);
+    margin: 0;
+}
+
+.role-options {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.role-btn {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    background: var(--parchment-light);
+    border: 2px solid var(--gold-light);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+}
+
+.role-btn:hover {
+    background: var(--gold-light);
+    border-color: var(--gold);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(201, 162, 39, 0.2);
+}
+
+.role-icon {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    flex-shrink: 0;
+}
+
+.teacher-btn .role-icon {
+    background: linear-gradient(135deg, var(--accent-blue) 0%, #2980b9 100%);
+    color: white;
+}
+
+.student-btn .role-icon {
+    background: linear-gradient(135deg, var(--accent-green) 0%, #1e8449 100%);
+    color: white;
+}
+
+.role-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.role-title {
+    font-family: 'Cinzel', serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.role-desc {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.95rem;
+    color: var(--ink-muted);
+}
+
+/* Teacher Sign-In Section */
+.teacher-signin-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: var(--parchment-light);
+    border: 2px solid var(--gold-light);
+    border-radius: 12px;
+}
+
+.teacher-signin-section .role-btn {
+    width: 100%;
+    border: none;
+    background: transparent;
+    cursor: default;
+}
+
+.teacher-signin-section .role-btn:hover {
+    transform: none;
+    box-shadow: none;
+    background: transparent;
+}
+
+.google-signin-wrapper {
+    margin-top: 0.5rem;
+}
+
+.signin-note {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.85rem;
+    color: var(--ink-muted);
+    margin: 0.5rem 0 0;
+    text-align: center;
+}
+
+/* Loading state during sign-in */
+.signin-loading {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--ink-muted);
+    font-family: 'Cormorant Garamond', serif;
+}
+
+.signin-loading::before {
+    content: '';
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--gold-light);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Teacher profile in header */
+.teacher-profile {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.teacher-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid var(--gold);
+}
+
+.solo-option {
+    padding-top: 1rem;
+    border-top: 1px solid var(--gold-light);
+}
+
+.solo-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    color: var(--ink-muted);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.solo-link:hover {
+    color: var(--gold-dark);
+}
+
+/* ============================================
+   STUDENT JOIN SCREEN
+   ============================================ */
+.join-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: linear-gradient(135deg, var(--parchment) 0%, var(--parchment-light) 100%);
+}
+
+.join-card {
+    background: white;
+    border-radius: 20px;
+    padding: 2.5rem;
+    max-width: 450px;
+    width: 100%;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    border: 3px solid var(--gold);
+    position: relative;
+}
+
+.back-btn {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: none;
+    border: none;
+    color: var(--ink-muted);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.back-btn:hover {
+    color: var(--ink);
+}
+
+.join-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-top: 1rem;
+}
+
+.join-header svg {
+    color: var(--accent-green);
+    margin-bottom: 1rem;
+}
+
+.join-header h2 {
+    font-family: 'Cinzel', serif;
+    font-size: 1.5rem;
+    color: var(--ink);
+    margin: 0 0 0.5rem;
+}
+
+.join-header p {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    color: var(--ink-muted);
+    margin: 0;
+}
+
+.join-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.join-form .primary-btn {
+    margin-top: 0.5rem;
+}
+
+.error-message {
+    background: rgba(220, 38, 38, 0.1);
+    border: 1px solid rgba(220, 38, 38, 0.3);
+    color: #b91c1c;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.95rem;
+    margin-top: 1rem;
+}
+
+/* ============================================
+   TEACHER DASHBOARD
+   ============================================ */
+.dashboard-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboard-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+    color: white;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.header-left h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.teacher-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.05rem;
+}
+
+.icon-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    border-radius: 8px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: white;
+    transition: all 0.2s ease;
+}
+
+.icon-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.dashboard-content {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* Sidebar */
+.dashboard-sidebar {
+    width: 280px;
+    background: var(--sidebar-bg);
+    color: var(--sidebar-text);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-header h3 {
+    font-family: 'Cinzel', serif;
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.add-class-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 6px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--sidebar-text);
+    transition: all 0.2s ease;
+}
+
+.add-class-btn:hover {
+    background: var(--accent-blue);
+}
+
+.class-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.class-item {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.class-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.class-item.active {
+    background: rgba(255, 255, 255, 0.1);
+    border-left: 3px solid var(--accent-blue);
+}
+
+.class-item-name {
+    font-family: 'Cinzel', serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+
+.class-item-meta {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.6);
+    display: flex;
+    gap: 0.75rem;
+}
+
+/* Main Content */
+.dashboard-main {
+    flex: 1;
+    padding: 1.5rem;
+    overflow-y: auto;
+    background: var(--classroom-bg);
+}
+
+/* Empty State */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--ink-muted);
+}
+
+.empty-state svg {
+    color: var(--gold-light);
+    margin-bottom: 1.5rem;
+}
+
+.empty-state h2 {
+    font-family: 'Cinzel', serif;
+    font-size: 1.5rem;
+    color: var(--ink);
+    margin: 0 0 0.75rem;
+}
+
+.empty-state p {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    max-width: 400px;
+    margin: 0 0 1.5rem;
+    line-height: 1.5;
+}
+
+/* Class View */
+.class-view {
+    max-width: 1200px;
+}
+
+.class-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.class-info h2 {
+    font-family: 'Cinzel', serif;
+    font-size: 1.6rem;
+    color: var(--ink);
+    margin: 0 0 0.5rem;
+}
+
+.class-code-display {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    color: var(--ink-muted);
+}
+
+.class-code-display code {
+    background: var(--gold-light);
+    color: var(--gold-dark);
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
+    font-family: 'Cinzel', serif;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+}
+
+.copy-btn {
+    background: none;
+    border: none;
+    color: var(--ink-muted);
+    cursor: pointer;
+    padding: 0.3rem;
+    transition: color 0.2s;
+}
+
+.copy-btn:hover {
+    color: var(--gold-dark);
+}
+
+/* Tabs */
+.class-tabs {
+    display: flex;
+    gap: 0.5rem;
+    border-bottom: 2px solid var(--gold-light);
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    background: none;
+    border: none;
+    font-family: 'Cinzel', serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--ink-muted);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+    color: var(--ink);
+}
+
+.tab-btn.active {
+    color: var(--gold-dark);
+    border-bottom-color: var(--gold);
+}
+
+.tab-btn .badge {
+    background: var(--gold-light);
+    color: var(--gold-dark);
+    padding: 0.15rem 0.5rem;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.tab-btn.active .badge {
+    background: var(--gold);
+    color: white;
+}
+
+/* Tab Panels */
+.tab-panel {
+    animation: fadeIn 0.3s ease;
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.panel-header h3 {
+    font-family: 'Cinzel', serif;
+    font-size: 1.1rem;
+    color: var(--ink);
+    margin: 0;
+}
+
+.refresh-hint {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.9rem;
+    color: var(--ink-muted);
+}
+
+.empty-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 2rem;
+    background: white;
+    border-radius: 12px;
+    border: 2px dashed var(--gold-light);
+    text-align: center;
+}
+
+.empty-panel svg {
+    color: var(--gold-light);
+    margin-bottom: 1rem;
+}
+
+.empty-panel p {
+    font-family: 'Cinzel', serif;
+    font-size: 1rem;
+    color: var(--ink);
+    margin: 0 0 0.5rem;
+}
+
+.empty-panel span {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.95rem;
+    color: var(--ink-muted);
+}
+
+/* Students Grid */
+.students-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.student-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--gold-light);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.student-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-green) 0%, #1e8449 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-family: 'Cinzel', serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.student-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.student-name {
+    font-family: 'Cinzel', serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 0 0 0.25rem;
+}
+
+.student-status {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.9rem;
+    color: var(--ink-muted);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.status-dot.online {
+    background: var(--accent-green);
+}
+
+.status-dot.offline {
+    background: #ccc;
+}
+
+/* Assignments List */
+.assignments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.assignment-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--gold-light);
+}
+
+.assignment-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
+
+.assignment-title {
+    font-family: 'Cinzel', serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 0;
+}
+
+.assignment-figure {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.95rem;
+    color: var(--gold-dark);
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.assignment-meta {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.9rem;
+    color: var(--ink-muted);
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+/* Scores Table */
+.scores-container {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.scores-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.scores-table th,
+.scores-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--gold-light);
+}
+
+.scores-table th {
+    background: var(--parchment-light);
+    font-family: 'Cinzel', serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink);
+}
+
+.scores-table td {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    color: var(--ink);
+}
+
+.score-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.score-badge.excellent {
+    background: rgba(39, 174, 96, 0.15);
+    color: #1e8449;
+}
+
+.score-badge.good {
+    background: rgba(52, 152, 219, 0.15);
+    color: #2980b9;
+}
+
+.score-badge.average {
+    background: rgba(230, 126, 34, 0.15);
+    color: #d35400;
+}
+
+.score-badge.needs-work {
+    background: rgba(231, 76, 60, 0.15);
+    color: #c0392b;
+}
+
+/* Activity Feed */
+.activity-feed {
+    background: white;
+    border-radius: 12px;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+    border-bottom: 1px solid var(--gold-light);
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.activity-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.activity-icon.chat {
+    background: rgba(52, 152, 219, 0.15);
+    color: var(--accent-blue);
+}
+
+.activity-icon.quiz {
+    background: rgba(155, 89, 182, 0.15);
+    color: var(--accent-purple);
+}
+
+.activity-icon.join {
+    background: rgba(39, 174, 96, 0.15);
+    color: var(--accent-green);
+}
+
+.activity-content {
+    flex: 1;
+}
+
+.activity-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    color: var(--ink);
+    margin: 0 0 0.25rem;
+}
+
+.activity-text strong {
+    font-weight: 600;
+}
+
+.activity-time {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.85rem;
+    color: var(--ink-muted);
+}
+
+.live-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: 'Cinzel', serif;
+    font-size: 0.85rem;
+    color: var(--accent-green);
+}
+
+.pulse {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent-green);
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.5);
+        opacity: 0.5;
+    }
+}
+
+/* ============================================
+   MODALS
+   ============================================ */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.2s ease;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modal-content.modal-lg {
+    max-width: 700px;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--gold-light);
+}
+
+.modal-header h2 {
+    font-family: 'Cinzel', serif;
+    font-size: 1.3rem;
+    color: var(--ink);
+    margin: 0;
+}
+
+.close-modal-btn {
+    background: none;
+    border: none;
+    color: var(--ink-muted);
+    cursor: pointer;
+    padding: 0.3rem;
+    transition: color 0.2s;
+}
+
+.close-modal-btn:hover {
+    color: var(--ink);
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--gold-light);
+    background: var(--parchment-light);
+}
+
+/* Template Section */
+.template-section h3 {
+    font-family: 'Cinzel', serif;
+    font-size: 1rem;
+    color: var(--ink);
+    margin: 0 0 1rem;
+}
+
+.template-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.template-card {
+    padding: 1rem;
+    background: var(--parchment-light);
+    border: 2px solid var(--gold-light);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+
+.template-card:hover {
+    background: var(--gold-light);
+    border-color: var(--gold);
+}
+
+.template-card.selected {
+    background: rgba(201, 162, 39, 0.15);
+    border-color: var(--gold);
+}
+
+.template-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.template-name {
+    font-family: 'Cinzel', serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 0 0 0.25rem;
+}
+
+.template-period {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.85rem;
+    color: var(--ink-muted);
+}
+
+.divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 1.5rem 0;
+    color: var(--ink-muted);
+    font-family: 'Cormorant Garamond', serif;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--gold-light);
+}
+
+.form-row {
+    display: flex;
+    gap: 1rem;
+}
+
+.form-row .form-group {
+    flex: 1;
+}
+
+/* ============================================
+   STUDENT CLASSROOM VIEW
+   ============================================ */
+.student-classroom-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--classroom-bg);
+}
+
+.student-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, var(--accent-green) 0%, #1e8449 100%);
+    color: white;
+}
+
+.class-badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+}
+
+.student-header h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.student-name-display {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+}
+
+.student-content {
+    flex: 1;
+    padding: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.assignments-panel h2 {
+    font-family: 'Cinzel', serif;
+    font-size: 1.4rem;
+    color: var(--ink);
+    margin: 0 0 1.5rem;
+}
+
+.student-assignments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.student-assignment-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+    border: 2px solid var(--gold-light);
+    transition: all 0.2s ease;
+}
+
+.student-assignment-card:hover {
+    border-color: var(--gold);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.12);
+}
+
+.student-assignment-card h3 {
+    font-family: 'Cinzel', serif;
+    font-size: 1.2rem;
+    color: var(--ink);
+    margin: 0 0 0.5rem;
+}
+
+.student-assignment-card .figure-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    color: var(--gold-dark);
+    margin: 0 0 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.student-assignment-card .instructions {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    color: var(--ink-muted);
+    margin: 0 0 1rem;
+    line-height: 1.5;
+}
+
+.assignment-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 900px) {
+    .dashboard-content {
+        flex-direction: column;
+    }
+
+    .dashboard-sidebar {
+        width: 100%;
+        max-height: 200px;
+    }
+
+    .class-list {
+        display: flex;
+        gap: 0.5rem;
+        padding: 0.5rem;
+        overflow-x: auto;
+    }
+
+    .class-item {
+        flex-shrink: 0;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        min-width: 180px;
+    }
+}
+
+@media (max-width: 600px) {
+    .role-card {
+        padding: 2rem 1.5rem;
+    }
+
+    .role-btn {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .class-header {
+        flex-direction: column;
+    }
+
+    .class-tabs {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+    }
+
+    .tab-btn {
+        flex-shrink: 0;
+    }
+
+    .form-row {
+        flex-direction: column;
+    }
+}
