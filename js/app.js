@@ -221,36 +221,145 @@ function showAssignmentChoiceModal() {
 async function usePremadeChatbot() {
   console.log('Using pre-made chatbot for:', classroomContext.figureName);
 
-  // Hide the modal
+  // Hide the choice modal
   document.getElementById('assignment-choice-modal').classList.add('hidden');
+
+  // Hide config screen and show a loading state
+  configScreen.classList.add('hidden');
+  chatScreen.classList.remove('hidden');
+
+  // Show loading message in chat
+  messagesContainer.innerHTML = `
+    <div class="message bot">
+      <div class="message-bubble">
+        <div class="loading-indicator">
+          <div class="quill-animation">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path>
+              <line x1="16" y1="8" x2="2" y2="22"></line>
+              <line x1="17.5" y1="15" x2="9" y2="15"></line>
+            </svg>
+          </div>
+          <div class="ink-drops">
+            <span></span><span></span><span></span><span></span>
+          </div>
+          <span class="loading-text-animated">Preparing ${classroomContext.figureName}...</span>
+        </div>
+      </div>
+    </div>
+  `;
 
   // Set the figure name
   state.name = classroomContext.figureName;
   figureNameInput.value = classroomContext.figureName;
 
+  // Set up the display name
+  figureDisplayName.textContent = state.name;
+
   // Try to get default portrait
   const defaultPortrait = getDefaultPortrait(state.name);
   if (defaultPortrait) {
     state.image = defaultPortrait;
+    figureDisplayImg.src = defaultPortrait;
+    figureDisplayImg.style.display = 'block';
+    const figurePlaceholder = document.getElementById('figure-placeholder');
+    if (figurePlaceholder) figurePlaceholder.classList.add('hidden');
   }
 
   // Load pre-made knowledge from knowledge banks
   await loadPremadeKnowledge(classroomContext.figureName);
 
-  // Show loading state on create button
-  const createBtn = document.getElementById('create-btn');
-  const originalBtnText = createBtn.textContent;
-  createBtn.textContent = 'Setting up chatbot...';
-  createBtn.disabled = true;
+  // Process documents for chunking
+  processDocuments();
 
-  // Create the chatbot automatically
+  // Get the appropriate voice for this character
   try {
-    await createChatbot();
+    const voiceInfo = await getVoiceForCharacter(state.name);
+    console.log('Voice configured:', voiceInfo);
   } catch (error) {
-    console.error('Error creating pre-made chatbot:', error);
-    // Reset button
-    createBtn.textContent = originalBtnText;
-    createBtn.disabled = false;
+    console.error('Error setting up voice:', error);
+  }
+
+  // Clear the loading message
+  messagesContainer.innerHTML = '';
+
+  // Add classroom mode banner
+  const banner = document.createElement('div');
+  banner.className = 'classroom-mode-banner';
+  banner.innerHTML = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+    <span><strong>Classroom Mode</strong> - ${classroomContext.studentName} | ${classroomContext.assignmentTitle || 'Assignment'}</span>
+  `;
+  messagesContainer.appendChild(banner);
+
+  // Show the floating quiz button
+  const floatingQuizBtn = document.getElementById('floating-quiz-btn');
+  if (floatingQuizBtn) {
+    floatingQuizBtn.classList.remove('hidden');
+    floatingQuizBtn.addEventListener('click', () => {
+      const startQuizBtn = document.getElementById('start-quiz-btn');
+      if (startQuizBtn) startQuizBtn.click();
+    });
+  }
+
+  // Update message input placeholder
+  messageInput.placeholder = `Ask ${state.name} a question...`;
+
+  // Populate sources list
+  sourcesList.innerHTML = '';
+  state.documents.forEach(doc => {
+    const li = document.createElement('li');
+    li.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+      ${doc.name}
+    `;
+    sourcesList.appendChild(li);
+  });
+
+  // Display educational links
+  displayEducationalLinks(state.name);
+
+  // Generate welcome greeting
+  try {
+    const greeting = await generateWelcomeGreeting();
+    const greetingMessage = document.createElement('div');
+    greetingMessage.className = 'message bot';
+    greetingMessage.innerHTML = `
+      <div class="message-bubble">
+        <div class="message-header">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          <span>${state.name}</span>
+        </div>
+        <p>${greeting}</p>
+      </div>
+    `;
+    messagesContainer.appendChild(greetingMessage);
+
+    // Auto-speak the greeting if enabled (with a small delay)
+    if (autoSpeakEnabled && greeting) {
+      setTimeout(() => {
+        generateSpeech(greeting);
+      }, 500);
+    }
+
+    // Add starter questions
+    displayStarterQuestions();
+  } catch (error) {
+    console.error('Error generating greeting:', error);
+    // Show fallback greeting
+    const greetingMessage = document.createElement('div');
+    greetingMessage.className = 'message bot';
+    greetingMessage.innerHTML = `
+      <div class="message-bubble">
+        <div class="message-header">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          <span>${state.name}</span>
+        </div>
+        <p>Greetings! I am ${state.name}. I am delighted to speak with you today. What would you like to know about my life and times?</p>
+      </div>
+    `;
+    messagesContainer.appendChild(greetingMessage);
+    displayStarterQuestions();
   }
 }
 
@@ -258,30 +367,30 @@ async function usePremadeChatbot() {
 async function loadPremadeKnowledge(figureName) {
   console.log('Loading pre-made knowledge for:', figureName);
 
-  // Try to fetch knowledge bank suggestions
+  // Always generate biographical content first - this ensures accurate quiz data
+  await generateBiographicalContent(figureName);
+
+  // Also try to get knowledge bank suggestions for additional depth
   try {
-    const knowledgeBanks = await fetchKnowledgeBankSuggestions(figureName);
+    const knowledgeBanks = await getKnowledgeBankSuggestions(figureName);
 
     if (knowledgeBanks && knowledgeBanks.length > 0) {
       // Add knowledge banks as documents
-      for (const kb of knowledgeBanks.slice(0, 5)) { // Take top 5 for better quiz content
-        state.documents.push({
-          name: kb.title || `Knowledge: ${kb.topic || 'General'}`,
-          content: kb.content || kb.summary || '',
-          type: 'text/plain'
-        });
+      for (const kb of knowledgeBanks.slice(0, 3)) {
+        if (kb.content && kb.content.length > 100) {
+          state.documents.push({
+            name: kb.title || `Knowledge: ${kb.topic || 'General'}`,
+            content: kb.content,
+            type: 'text/plain',
+            isKnowledgeBank: true
+          });
+        }
       }
-      console.log('Added', state.documents.length, 'knowledge banks');
-    }
-
-    // If still no documents or not enough content, generate biographical info
-    if (state.documents.length === 0 || getTotalDocumentLength() < 500) {
-      await generateBiographicalContent(figureName);
+      console.log('Total documents:', state.documents.length);
     }
   } catch (error) {
-    console.error('Error loading pre-made knowledge:', error);
-    // Generate biographical content as fallback
-    await generateBiographicalContent(figureName);
+    console.error('Error loading knowledge banks:', error);
+    // Biographical content is already loaded, so we're okay
   }
 }
 
