@@ -264,7 +264,7 @@ async function loadPremadeKnowledge(figureName) {
 
     if (knowledgeBanks && knowledgeBanks.length > 0) {
       // Add knowledge banks as documents
-      for (const kb of knowledgeBanks.slice(0, 3)) { // Take top 3
+      for (const kb of knowledgeBanks.slice(0, 5)) { // Take top 5 for better quiz content
         state.documents.push({
           name: kb.title || `Knowledge: ${kb.topic || 'General'}`,
           content: kb.content || kb.summary || '',
@@ -274,23 +274,92 @@ async function loadPremadeKnowledge(figureName) {
       console.log('Added', state.documents.length, 'knowledge banks');
     }
 
-    // If still no documents, add a basic placeholder
-    if (state.documents.length === 0) {
-      state.documents.push({
-        name: `About ${figureName}`,
-        content: `This is a conversation with ${figureName}. The AI will use its general knowledge about this historical figure to respond to questions.`,
-        type: 'text/plain'
-      });
+    // If still no documents or not enough content, generate biographical info
+    if (state.documents.length === 0 || getTotalDocumentLength() < 500) {
+      await generateBiographicalContent(figureName);
     }
   } catch (error) {
     console.error('Error loading pre-made knowledge:', error);
-    // Add basic placeholder document
-    state.documents.push({
-      name: `About ${figureName}`,
-      content: `This is a conversation with ${figureName}. The AI will use its general knowledge about this historical figure to respond to questions.`,
-      type: 'text/plain'
-    });
+    // Generate biographical content as fallback
+    await generateBiographicalContent(figureName);
   }
+}
+
+// Get total length of all documents
+function getTotalDocumentLength() {
+  return state.documents.reduce((total, doc) => total + (doc.content?.length || 0), 0);
+}
+
+// Generate biographical content for a historical figure using Claude
+async function generateBiographicalContent(figureName) {
+  console.log('Generating biographical content for:', figureName);
+
+  const workerUrl = 'https://historical-figure2-app.ultisim.workers.dev/';
+  const API_KEY = config.apiKey;
+
+  const prompt = `Create a detailed biographical document about ${figureName} for educational purposes. Include:
+
+1. BASIC INFORMATION:
+   - Full name and any titles
+   - Birth and death dates (with years)
+   - Place of birth and nationality
+   - Time period/era they lived in
+
+2. MAJOR ACCOMPLISHMENTS:
+   - Their most significant achievements
+   - What they are most famous for
+   - Key contributions to their field
+
+3. IMPORTANT LIFE EVENTS:
+   - Key moments in their life
+   - Significant relationships or collaborations
+   - Challenges they faced
+
+4. HISTORICAL CONTEXT:
+   - What was happening in the world during their lifetime
+   - How they influenced or were influenced by their era
+
+5. LEGACY:
+   - How they are remembered today
+   - Their lasting impact
+
+Write this as a cohesive educational document with accurate historical facts. This will be used to generate quiz questions, so include specific dates, names, and verifiable facts.`;
+
+  try {
+    const response = await fetch(workerUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        apiKey: API_KEY,
+        system: 'You are a historian creating accurate, educational biographical content. Provide factual information with specific dates and details.',
+        messages: [{ role: 'user', content: prompt }],
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 2000
+      })
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      if (data.content && data.content[0] && data.content[0].text) {
+        state.documents.push({
+          name: `Biography of ${figureName}`,
+          content: data.content[0].text,
+          type: 'text/plain'
+        });
+        console.log('Generated biographical content for', figureName);
+        return;
+      }
+    }
+  } catch (error) {
+    console.error('Error generating biographical content:', error);
+  }
+
+  // Final fallback - add a note that this is a basic setup
+  state.documents.push({
+    name: `About ${figureName}`,
+    content: `${figureName} is a historical figure. The AI assistant will use its general knowledge to answer questions about this person's life, achievements, and historical context. For the most accurate quiz results, consider uploading specific documents about ${figureName}.`,
+    type: 'text/plain'
+  });
 }
 
 // Let student create their own chatbot
