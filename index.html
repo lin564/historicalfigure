@@ -181,6 +181,51 @@
             </div>
         </div>
 
+        <!-- Assignment Choice Modal (for classroom students) -->
+        <div id="assignment-choice-modal" class="assignment-choice-modal hidden">
+            <div class="assignment-choice-content">
+                <div class="assignment-choice-header">
+                    <h2>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        <span id="assignment-figure-name">Historical Figure</span>
+                    </h2>
+                    <p id="assignment-title-display" class="assignment-subtitle"></p>
+                </div>
+
+                <p id="assignment-instructions-display" class="assignment-instructions"></p>
+
+                <div class="choice-options">
+                    <button id="use-premade-btn" class="choice-btn premade">
+                        <div class="choice-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+                        </div>
+                        <div class="choice-text">
+                            <h3>Use Teacher's Version</h3>
+                            <p>Chat with the pre-made chatbot your teacher created with curated knowledge sources</p>
+                        </div>
+                    </button>
+
+                    <button id="create-own-btn" class="choice-btn custom">
+                        <div class="choice-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        </div>
+                        <div class="choice-text">
+                            <h3>Create Your Own</h3>
+                            <p>Research and upload your own documents about <span id="figure-name-in-btn">this figure</span></p>
+                        </div>
+                    </button>
+                </div>
+
+                <div class="classroom-info">
+                    <span class="student-badge">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        <span id="student-name-badge"></span>
+                    </span>
+                    <a href="classroom.html" class="back-to-classroom">← Back to Classroom</a>
+                </div>
+            </div>
+        </div>
+
         <!-- Quiz Modal -->
         <div id="quiz-modal" class="quiz-modal hidden">
             <div class="quiz-modal-content">

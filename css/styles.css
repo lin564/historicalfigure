@@ -2165,3 +2165,259 @@ input:checked + .slider:before {
         justify-content: center;
     }
 }
+
+/* ============================================
+   ASSIGNMENT CHOICE MODAL (Classroom Students)
+   ============================================ */
+.assignment-choice-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(44, 36, 22, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    padding: 1rem;
+    backdrop-filter: blur(4px);
+}
+
+.assignment-choice-modal.hidden {
+    display: none;
+}
+
+.assignment-choice-content {
+    background: linear-gradient(180deg, var(--parchment-light) 0%, var(--parchment) 100%);
+    border: 3px solid var(--gold);
+    border-radius: 12px;
+    padding: 2rem;
+    width: 100%;
+    max-width: 600px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    position: relative;
+}
+
+.assignment-choice-content::before,
+.assignment-choice-content::after {
+    content: '✦';
+    position: absolute;
+    color: var(--gold);
+    font-size: 1.2rem;
+}
+
+.assignment-choice-content::before {
+    top: 10px;
+    left: 15px;
+}
+
+.assignment-choice-content::after {
+    bottom: 10px;
+    right: 15px;
+}
+
+.assignment-choice-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--gold-light);
+}
+
+.assignment-choice-header h2 {
+    font-family: 'Cinzel', serif;
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.assignment-choice-header h2 svg {
+    color: var(--gold);
+}
+
+.assignment-subtitle {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    color: var(--ink-muted);
+    margin-top: 0.5rem;
+    font-style: italic;
+}
+
+.assignment-instructions {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.05rem;
+    color: var(--ink-light);
+    text-align: center;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: rgba(201, 162, 39, 0.08);
+    border-radius: 8px;
+    border-left: 3px solid var(--gold);
+}
+
+.choice-options {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.choice-btn {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem;
+    border: 2px solid var(--gold-light);
+    border-radius: 10px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: left;
+}
+
+.choice-btn:hover {
+    border-color: var(--gold);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px var(--shadow);
+}
+
+.choice-btn.premade:hover {
+    background: linear-gradient(135deg, rgba(201, 162, 39, 0.1) 0%, rgba(201, 162, 39, 0.05) 100%);
+}
+
+.choice-btn.custom:hover {
+    background: linear-gradient(135deg, rgba(92, 74, 50, 0.08) 0%, rgba(92, 74, 50, 0.03) 100%);
+}
+
+.choice-icon {
+    flex-shrink: 0;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.choice-btn.premade .choice-icon {
+    background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 100%);
+    color: white;
+}
+
+.choice-btn.custom .choice-icon {
+    background: linear-gradient(135deg, var(--ink-muted) 0%, var(--ink-light) 100%);
+    color: white;
+}
+
+.choice-text h3 {
+    font-family: 'Cinzel', serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 0.25rem;
+}
+
+.choice-text p {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.95rem;
+    color: var(--ink-muted);
+    margin: 0;
+}
+
+.classroom-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 1rem;
+    border-top: 1px solid var(--parchment-dark);
+}
+
+.student-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.95rem;
+    color: var(--ink-light);
+    padding: 0.4rem 0.8rem;
+    background: rgba(201, 162, 39, 0.1);
+    border-radius: 20px;
+}
+
+.student-badge svg {
+    color: var(--gold);
+}
+
+.back-to-classroom {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.95rem;
+    color: var(--ink-muted);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.back-to-classroom:hover {
+    color: var(--gold);
+}
+
+/* Responsive for assignment choice modal */
+@media (max-width: 600px) {
+    .assignment-choice-content {
+        padding: 1.5rem;
+    }
+
+    .assignment-choice-header h2 {
+        font-size: 1.3rem;
+    }
+
+    .choice-btn {
+        padding: 1rem;
+    }
+
+    .choice-icon {
+        width: 48px;
+        height: 48px;
+    }
+
+    .choice-icon svg {
+        width: 24px;
+        height: 24px;
+    }
+
+    .choice-text h3 {
+        font-size: 1rem;
+    }
+
+    .classroom-info {
+        flex-direction: column;
+        gap: 0.75rem;
+        text-align: center;
+    }
+}
+
+/* ============================================
+   CLASSROOM MODE INDICATOR (shown in chat)
+   ============================================ */
+.classroom-mode-banner {
+    background: linear-gradient(135deg, rgba(201, 162, 39, 0.15) 0%, rgba(201, 162, 39, 0.05) 100%);
+    border: 1px solid var(--gold-light);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.95rem;
+    color: var(--ink-light);
+}
+
+.classroom-mode-banner svg {
+    color: var(--gold);
+    flex-shrink: 0;
+}
+
+.classroom-mode-banner strong {
+    color: var(--ink);
+}

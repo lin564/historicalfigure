@@ -113,7 +113,200 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Set up voice speed control
   initVoiceSpeedControl();
+
+  // Check for classroom assignment URL parameters
+  checkClassroomAssignment();
 });
+
+// ============================================
+// CLASSROOM ASSIGNMENT DETECTION
+// ============================================
+
+// Classroom state for tracking student context
+let classroomContext = {
+  isClassroomMode: false,
+  studentName: '',
+  studentId: null,
+  classId: null,
+  assignmentId: null,
+  figureName: '',
+  assignmentTitle: '',
+  assignmentInstructions: ''
+};
+
+// Check if this is a classroom assignment
+function checkClassroomAssignment() {
+  const params = new URLSearchParams(window.location.search);
+
+  const figure = params.get('figure');
+  const student = params.get('student');
+  const studentId = params.get('studentId');
+  const classId = params.get('class');
+  const assignmentId = params.get('assignment');
+
+  // If we have classroom parameters, show the choice modal
+  if (figure && student && classId && assignmentId) {
+    console.log('Classroom assignment detected:', { figure, student, classId, assignmentId });
+
+    classroomContext = {
+      isClassroomMode: true,
+      studentName: student,
+      studentId: studentId,
+      classId: classId,
+      assignmentId: assignmentId,
+      figureName: decodeURIComponent(figure),
+      assignmentTitle: '',
+      assignmentInstructions: ''
+    };
+
+    // Fetch assignment details and show choice modal
+    fetchAssignmentDetails(classId, assignmentId);
+  }
+}
+
+// Fetch assignment details from the API
+async function fetchAssignmentDetails(classId, assignmentId) {
+  const CLASSROOM_API_URL = 'https://historical-chatbot-classroom.ultisim.workers.dev';
+
+  try {
+    const response = await fetch(`${CLASSROOM_API_URL}/api/classes/${classId}/assignments`);
+    const data = await response.json();
+
+    if (data.assignments) {
+      const assignment = data.assignments.find(a => a.id == assignmentId);
+      if (assignment) {
+        classroomContext.assignmentTitle = assignment.title || '';
+        classroomContext.assignmentInstructions = assignment.instructions || '';
+      }
+    }
+  } catch (error) {
+    console.log('Could not fetch assignment details:', error);
+  }
+
+  // Show the choice modal
+  showAssignmentChoiceModal();
+}
+
+// Show the assignment choice modal
+function showAssignmentChoiceModal() {
+  const modal = document.getElementById('assignment-choice-modal');
+  if (!modal) return;
+
+  // Populate modal with assignment info
+  document.getElementById('assignment-figure-name').textContent = classroomContext.figureName;
+  document.getElementById('figure-name-in-btn').textContent = classroomContext.figureName;
+  document.getElementById('student-name-badge').textContent = classroomContext.studentName;
+
+  const titleDisplay = document.getElementById('assignment-title-display');
+  if (titleDisplay && classroomContext.assignmentTitle) {
+    titleDisplay.textContent = classroomContext.assignmentTitle;
+  }
+
+  const instructionsDisplay = document.getElementById('assignment-instructions-display');
+  if (instructionsDisplay && classroomContext.assignmentInstructions) {
+    instructionsDisplay.textContent = classroomContext.assignmentInstructions;
+  } else if (instructionsDisplay) {
+    instructionsDisplay.style.display = 'none';
+  }
+
+  // Set up button handlers
+  document.getElementById('use-premade-btn').addEventListener('click', usePremadeChatbot);
+  document.getElementById('create-own-btn').addEventListener('click', createOwnChatbot);
+
+  // Show the modal
+  modal.classList.remove('hidden');
+}
+
+// Use the teacher's pre-made chatbot
+async function usePremadeChatbot() {
+  console.log('Using pre-made chatbot for:', classroomContext.figureName);
+
+  // Hide the modal
+  document.getElementById('assignment-choice-modal').classList.add('hidden');
+
+  // Set the figure name
+  state.name = classroomContext.figureName;
+  figureNameInput.value = classroomContext.figureName;
+
+  // Try to get default portrait
+  const defaultPortrait = getDefaultPortrait(state.name);
+  if (defaultPortrait) {
+    state.image = defaultPortrait;
+  }
+
+  // Load pre-made knowledge from knowledge banks
+  await loadPremadeKnowledge(classroomContext.figureName);
+
+  // Show loading state on create button
+  const createBtn = document.getElementById('create-btn');
+  const originalBtnText = createBtn.textContent;
+  createBtn.textContent = 'Setting up chatbot...';
+  createBtn.disabled = true;
+
+  // Create the chatbot automatically
+  try {
+    await createChatbot();
+  } catch (error) {
+    console.error('Error creating pre-made chatbot:', error);
+    // Reset button
+    createBtn.textContent = originalBtnText;
+    createBtn.disabled = false;
+  }
+}
+
+// Load pre-made knowledge for the figure
+async function loadPremadeKnowledge(figureName) {
+  console.log('Loading pre-made knowledge for:', figureName);
+
+  // Try to fetch knowledge bank suggestions
+  try {
+    const knowledgeBanks = await fetchKnowledgeBankSuggestions(figureName);
+
+    if (knowledgeBanks && knowledgeBanks.length > 0) {
+      // Add knowledge banks as documents
+      for (const kb of knowledgeBanks.slice(0, 3)) { // Take top 3
+        state.documents.push({
+          name: kb.title || `Knowledge: ${kb.topic || 'General'}`,
+          content: kb.content || kb.summary || '',
+          type: 'text/plain'
+        });
+      }
+      console.log('Added', state.documents.length, 'knowledge banks');
+    }
+
+    // If still no documents, add a basic placeholder
+    if (state.documents.length === 0) {
+      state.documents.push({
+        name: `About ${figureName}`,
+        content: `This is a conversation with ${figureName}. The AI will use its general knowledge about this historical figure to respond to questions.`,
+        type: 'text/plain'
+      });
+    }
+  } catch (error) {
+    console.error('Error loading pre-made knowledge:', error);
+    // Add basic placeholder document
+    state.documents.push({
+      name: `About ${figureName}`,
+      content: `This is a conversation with ${figureName}. The AI will use its general knowledge about this historical figure to respond to questions.`,
+      type: 'text/plain'
+    });
+  }
+}
+
+// Let student create their own chatbot
+function createOwnChatbot() {
+  console.log('Student creating own chatbot for:', classroomContext.figureName);
+
+  // Hide the modal
+  document.getElementById('assignment-choice-modal').classList.add('hidden');
+
+  // Pre-fill the figure name
+  figureNameInput.value = classroomContext.figureName;
+
+  // Show the config screen (it should already be visible, but just in case)
+  configScreen.classList.remove('hidden');
+  chatScreen.classList.add('hidden');
+}
 
 // Functions
 function handleImageUpload(e) {
@@ -1025,6 +1218,17 @@ async function createChatbot() {
   configScreen.classList.add('hidden');
   chatScreen.classList.remove('hidden');
 
+  // Add classroom mode banner if in classroom mode
+  if (classroomContext.isClassroomMode) {
+    const banner = document.createElement('div');
+    banner.className = 'classroom-mode-banner';
+    banner.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+      <span><strong>Classroom Mode</strong> - ${classroomContext.studentName} | ${classroomContext.assignmentTitle || 'Assignment'}</span>
+    `;
+    messagesContainer.appendChild(banner);
+  }
+
   // Generate and display personalized welcome greeting with animated loading
   const greetingMessage = document.createElement('div');
   greetingMessage.className = 'message bot';
@@ -1355,6 +1559,10 @@ async function generateWelcomeGreeting() {
     return `Document: ${doc.name}\nContent: ${doc.content}\n\n`;
   }).join('');
 
+  // Add classroom context note if applicable
+  const classroomNote = classroomContext.isClassroomMode ?
+    `\n- This is an educational setting for students ages 16+ - keep content appropriate` : '';
+
   const systemPrompt = `You are ${state.name}, a historical figure. Generate a brief, warm welcome greeting (2-3 sentences) introducing yourself to someone who wants to learn about you.
 
 IMPORTANT RULES:
@@ -1363,7 +1571,7 @@ IMPORTANT RULES:
 - Mention one interesting thing about yourself to spark curiosity
 - NO asterisks, NO stage directions, NO action descriptions
 - Keep it under 50 words
-- This will be spoken aloud, so write natural speech
+- This will be spoken aloud, so write natural speech${classroomNote}
 
 DOCUMENTS ABOUT YOU (use these for context):
 ${documentContext.substring(0, 2000)}`;
@@ -1405,6 +1613,19 @@ async function callClaudeAPI(context, userMessage) {
     // Format messages for Claude API (we'll move system to the top level)
     let messages = [];
     
+    // Build content guardrails for classroom mode
+    const contentGuardrails = classroomContext.isClassroomMode ? `
+
+CONTENT GUARDRAILS (This is an educational setting for students ages 16+):
+- Keep all content appropriate for high school students (ages 16+)
+- DO NOT include explicit sexual content, graphic violence, or gore
+- Historical discussions of war, conflict, and difficult topics are allowed, but present them in an educational, age-appropriate manner
+- Avoid gratuitous details of torture, abuse, or suffering
+- If asked about sensitive historical events (wars, atrocities, etc.), provide factual, educational responses without graphic descriptions
+- Maintain a respectful, educational tone throughout
+- If a question seems designed to elicit inappropriate content, redirect to the educational aspects of the topic
+- You may discuss mature historical themes (politics, conflict, death, social issues) in an educational context` : '';
+
     // System message content goes into a separate parameter
     const systemContent = `You are ${state.name}, a historical figure brought back to life to share your wisdom. You should respond in first person, as if you ARE this historical figure speaking directly to the questioner.
 
@@ -1420,6 +1641,7 @@ IMPORTANT INSTRUCTIONS:
    - NO narrative descriptions of your actions or expressions
    - NO meta-commentary about how you're speaking
    Just write pure dialogue - the actual words you would speak, nothing else.
+${contentGuardrails}
 
 DOCUMENTS ABOUT YOU:
 ${context}
