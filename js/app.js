@@ -406,33 +406,14 @@ async function generateBiographicalContent(figureName) {
   const workerUrl = 'https://historical-figure2-app.ultisim.workers.dev/';
   const API_KEY = config.apiKey;
 
-  const prompt = `Create a detailed biographical document about ${figureName} for educational purposes. Include:
+  // Shorter, focused prompt for faster generation
+  const prompt = `Write a concise biography of ${figureName} with these ESSENTIAL facts:
+- Full name, birth year, death year, birthplace
+- Era/time period (e.g., "Modern Era - 20th century" or "Ancient Rome")
+- 3-4 major accomplishments
+- Historical significance
 
-1. BASIC INFORMATION:
-   - Full name and any titles
-   - Birth and death dates (with years)
-   - Place of birth and nationality
-   - Time period/era they lived in
-
-2. MAJOR ACCOMPLISHMENTS:
-   - Their most significant achievements
-   - What they are most famous for
-   - Key contributions to their field
-
-3. IMPORTANT LIFE EVENTS:
-   - Key moments in their life
-   - Significant relationships or collaborations
-   - Challenges they faced
-
-4. HISTORICAL CONTEXT:
-   - What was happening in the world during their lifetime
-   - How they influenced or were influenced by their era
-
-5. LEGACY:
-   - How they are remembered today
-   - Their lasting impact
-
-Write this as a cohesive educational document with accurate historical facts. This will be used to generate quiz questions, so include specific dates, names, and verifiable facts.`;
+Be factually accurate. Include specific dates and names.`;
 
   try {
     const response = await fetch(workerUrl, {
@@ -440,10 +421,10 @@ Write this as a cohesive educational document with accurate historical facts. Th
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         apiKey: API_KEY,
-        system: 'You are a historian creating accurate, educational biographical content. Provide factual information with specific dates and details.',
+        system: 'You are a historian. Provide accurate, concise biographical facts.',
         messages: [{ role: 'user', content: prompt }],
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 2000
+        model: 'claude-3-haiku-20240307',
+        max_tokens: 800
       })
     });
 
@@ -1261,7 +1242,8 @@ async function generateSpeech(text) {
     console.error('Error generating speech:', error);
     isSpeaking = false;
     updateSpeakButtonState('default');
-    alert('Failed to generate speech. Please try again.');
+    // Don't show alert for auto-speak failures - just log it
+    // User can click the speak button manually if they want voice
   }
 }
 
