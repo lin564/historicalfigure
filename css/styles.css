@@ -2421,3 +2421,64 @@ input:checked + .slider:before {
 .classroom-mode-banner strong {
     color: var(--ink);
 }
+
+/* ============================================
+   FLOATING QUIZ BUTTON (Classroom Students)
+   ============================================ */
+.floating-quiz-btn {
+    position: fixed;
+    bottom: 100px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.875rem 1.25rem;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+    color: white;
+    border: none;
+    border-radius: 30px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(201, 162, 39, 0.4), 0 2px 6px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    z-index: 100;
+    animation: pulse-quiz 2s infinite;
+}
+
+.floating-quiz-btn:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 20px rgba(201, 162, 39, 0.5), 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+
+.floating-quiz-btn:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.floating-quiz-btn.hidden {
+    display: none;
+}
+
+.floating-quiz-btn svg {
+    flex-shrink: 0;
+}
+
+@keyframes pulse-quiz {
+    0%, 100% {
+        box-shadow: 0 4px 15px rgba(201, 162, 39, 0.4), 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+    50% {
+        box-shadow: 0 4px 20px rgba(201, 162, 39, 0.6), 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+}
+
+/* Mobile positioning */
+@media (max-width: 768px) {
+    .floating-quiz-btn {
+        bottom: 80px;
+        right: 15px;
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
+}

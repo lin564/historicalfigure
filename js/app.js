@@ -1227,6 +1227,19 @@ async function createChatbot() {
       <span><strong>Classroom Mode</strong> - ${classroomContext.studentName} | ${classroomContext.assignmentTitle || 'Assignment'}</span>
     `;
     messagesContainer.appendChild(banner);
+
+    // Show the floating quiz button for classroom students
+    const floatingQuizBtn = document.getElementById('floating-quiz-btn');
+    if (floatingQuizBtn) {
+      floatingQuizBtn.classList.remove('hidden');
+      floatingQuizBtn.addEventListener('click', () => {
+        // Trigger the same quiz start as the sidebar button
+        const startQuizBtn = document.getElementById('start-quiz-btn');
+        if (startQuizBtn) {
+          startQuizBtn.click();
+        }
+      });
+    }
   }
 
   // Generate and display personalized welcome greeting with animated loading
