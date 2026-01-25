@@ -3288,7 +3288,7 @@ async function generateQuizQuestions() {
   // Gather document context (first few chunks)
   const documentContext = state.chunks
     .slice(0, 10)
-    .map(chunk => chunk.text)
+    .map(chunk => chunk.content)
     .join('\n\n');
 
   const prompt = `You are creating an educational quiz about ${state.name} for a student who has been having a conversation with a chatbot simulating this historical figure.
