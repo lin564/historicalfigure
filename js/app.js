@@ -3327,13 +3327,19 @@ Return ONLY a valid JSON array with this exact format (no markdown, no explanati
 ]`;
 
   try {
-    const response = await fetch(WORKER_URL, {
+    const workerUrl = 'https://historical-figure2-app.ultisim.workers.dev/';
+    console.log('Quiz document context length:', documentContext.length);
+    console.log('Quiz document preview:', documentContext.substring(0, 500));
+
+    const response = await fetch(workerUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        message: prompt,
-        conversationHistory: [],
-        systemPrompt: 'You are a quiz generator. Return only valid JSON arrays, no markdown formatting.'
+        apiKey: config.apiKey,
+        system: 'You are a quiz generator. Return only valid JSON arrays, no markdown formatting. Base your questions ONLY on the source documents provided - do not make up facts.',
+        messages: [{ role: 'user', content: prompt }],
+        model: 'claude-3-haiku-20240307',
+        max_tokens: 1500
       })
     });
 
@@ -3342,7 +3348,15 @@ Return ONLY a valid JSON array with this exact format (no markdown, no explanati
     }
 
     const data = await response.json();
-    let responseText = data.response || data.content || '';
+    // Handle the Claude API response format
+    let responseText = '';
+    if (data.content && data.content[0] && data.content[0].text) {
+      responseText = data.content[0].text;
+    } else if (data.response) {
+      responseText = data.response;
+    } else {
+      throw new Error('Unexpected response format');
+    }
 
     // Clean up response - remove markdown code blocks if present
     responseText = responseText.trim();
@@ -3615,18 +3629,28 @@ Return ONLY a valid JSON object (no markdown):
 }`;
 
   try {
-    const response = await fetch(WORKER_URL, {
+    const workerUrl = 'https://historical-figure2-app.ultisim.workers.dev/';
+    const response = await fetch(workerUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        message: prompt,
-        conversationHistory: [],
-        systemPrompt: 'You are an educational quiz grader. Return only valid JSON, no markdown.'
+        apiKey: config.apiKey,
+        system: 'You are an educational quiz grader. Return only valid JSON, no markdown.',
+        messages: [{ role: 'user', content: prompt }],
+        model: 'claude-3-haiku-20240307',
+        max_tokens: 300
       })
     });
 
     const data = await response.json();
-    let responseText = data.response || data.content || '';
+    let responseText = '';
+    if (data.content && data.content[0] && data.content[0].text) {
+      responseText = data.content[0].text;
+    } else if (data.response) {
+      responseText = data.response;
+    } else {
+      throw new Error('Unexpected response format');
+    }
 
     // Clean up response
     responseText = responseText.trim();
