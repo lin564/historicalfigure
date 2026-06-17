@@ -740,7 +740,7 @@ function cleanTextForSpeech(text) {
 
 // ElevenLabs configuration
 const elevenLabsConfig = {
-  apiKey: 'YOUR_ELEVENLABS_API_KEY_HERE',
+  apiKey: config.elevenLabsApiKey,
   voiceId: 'zXavd5uyFdq2kwZzInIc', // Default voice, will be overridden
   workerUrl: 'https://historical-figure-voice.ultisim.workers.dev/',
   voiceDesignWorkerUrl: 'https://historical-figure-voice.ultisim.workers.dev/design',

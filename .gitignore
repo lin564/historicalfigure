@@ -1,0 +1,9 @@
+# Local API keys — never commit these. Copy config.example.js to config.js and fill in your own.
+js/config.js
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
