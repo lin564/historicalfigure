@@ -28,6 +28,51 @@ let state = {
   chunks: [] // For storing document chunks
 };
 
+// ============================================
+// DIRECT API CALLS (Bring-Your-Own-Key mode)
+// These call Anthropic and ElevenLabs straight from the browser using the user's
+// own key (see byok.js), so the app needs no backend/Cloudflare and runs on
+// static hosting like GitHub Pages. Each helper accepts the same request shape
+// the old Cloudflare Worker took and returns the raw fetch Response, so all the
+// existing response-parsing code below is unchanged.
+// ============================================
+
+// Anthropic Messages API. Body fields: model, messages, system, max_tokens,
+// temperature. The key is moved from the body into the x-api-key header.
+async function anthropicMessages(requestBody) {
+  const { apiKey, ...body } = requestBody;
+  return fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey || '',
+      'anthropic-version': '2023-06-01',
+      // Required for calling the Anthropic API directly from a browser.
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify(body)
+  });
+}
+
+// ElevenLabs text-to-speech. Returns an audio response (.blob()), same as the
+// old voice Worker did.
+async function elevenLabsTTS(opts) {
+  const latency = opts.optimizeStreamingLatency != null ? opts.optimizeStreamingLatency : 0;
+  const url = 'https://api.elevenlabs.io/v1/text-to-speech/' +
+    encodeURIComponent(opts.voiceId) + '?optimize_streaming_latency=' + latency;
+  return fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'xi-api-key': opts.apiKey || ''
+    },
+    body: JSON.stringify({
+      text: opts.text,
+      model_id: opts.modelId || 'eleven_turbo_v2_5'
+    })
+  });
+}
+
 // Function to toggle between demo and API mode
 function toggleAPIMode() {
   const apiToggle = document.getElementById('api-toggle');
@@ -416,16 +461,12 @@ async function generateBiographicalContent(figureName) {
 Be factually accurate. Include specific dates and names.`;
 
   try {
-    const response = await fetch(workerUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        apiKey: API_KEY,
-        system: 'You are a historian. Provide accurate, concise biographical facts.',
-        messages: [{ role: 'user', content: prompt }],
-        model: 'claude-3-haiku-20240307',
-        max_tokens: 800
-      })
+    const response = await anthropicMessages({
+      apiKey: API_KEY,
+      system: 'You are a historian. Provide accurate, concise biographical facts.',
+      messages: [{ role: 'user', content: prompt }],
+      model: 'claude-3-haiku-20240307',
+      max_tokens: 800
     });
 
     if (response.ok) {
@@ -1186,19 +1227,13 @@ async function generateSpeech(text) {
     const voiceIdToUse = state.voiceId || elevenLabsConfig.voiceId;
     console.log('Using voice ID:', voiceIdToUse);
 
-    // Call ElevenLabs via worker with optimized settings
-    const response = await fetch(elevenLabsConfig.workerUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        apiKey: elevenLabsConfig.apiKey,
-        voiceId: voiceIdToUse,
-        text: cleanedText,
-        modelId: elevenLabsConfig.modelId,
-        optimizeStreamingLatency: elevenLabsConfig.optimizeStreamingLatency
-      })
+    // Call ElevenLabs directly from the browser (BYOK).
+    const response = await elevenLabsTTS({
+      apiKey: elevenLabsConfig.apiKey,
+      voiceId: voiceIdToUse,
+      text: cleanedText,
+      modelId: elevenLabsConfig.modelId,
+      optimizeStreamingLatency: elevenLabsConfig.optimizeStreamingLatency
     });
 
     if (!response.ok) {
@@ -1750,16 +1785,12 @@ DOCUMENTS ABOUT YOU (use these for context):
 ${documentContext.substring(0, 2000)}`;
 
   try {
-    const response = await fetch(workerUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        apiKey: API_KEY,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: 'Please introduce yourself.' }],
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 150
-      })
+    const response = await anthropicMessages({
+      apiKey: API_KEY,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: 'Please introduce yourself.' }],
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 150
     });
 
     if (!response.ok) throw new Error('API request failed');
@@ -1857,14 +1888,8 @@ Remember: You ARE ${state.name}. Speak as yourself, sharing your wisdom, experie
     console.log("Request payload structure:", Object.keys(requestData));
     console.log("Number of messages:", requestData.messages.length);
     
-    // Call your Worker instead of Claude API directly
-    const response = await fetch(workerUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(requestData)
-    });
+    // Call the Anthropic API directly from the browser (BYOK).
+    const response = await anthropicMessages(requestData);
     
     console.log("Worker response status:", response.status);
     
@@ -2149,16 +2174,10 @@ IMPORTANT: Respond with ONLY valid JSON, no other text before or after:
     temperature: 0.7
   };
 
-  console.log('Sending knowledge bank request to worker...');
+  console.log('Sending knowledge bank request directly to Anthropic...');
   console.log('Request payload keys:', Object.keys(requestData));
 
-  const response = await fetch(workerUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(requestData)
-  });
+  const response = await anthropicMessages(requestData);
 
   console.log('Worker response status:', response.status);
 
@@ -3331,16 +3350,12 @@ Return ONLY a valid JSON array with this exact format (no markdown, no explanati
     console.log('Quiz document context length:', documentContext.length);
     console.log('Quiz document preview:', documentContext.substring(0, 500));
 
-    const response = await fetch(workerUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        apiKey: config.apiKey,
-        system: 'You are a quiz generator. Return only valid JSON arrays, no markdown formatting. Base your questions ONLY on the source documents provided - do not make up facts.',
-        messages: [{ role: 'user', content: prompt }],
-        model: 'claude-3-haiku-20240307',
-        max_tokens: 1500
-      })
+    const response = await anthropicMessages({
+      apiKey: config.apiKey,
+      system: 'You are a quiz generator. Return only valid JSON arrays, no markdown formatting. Base your questions ONLY on the source documents provided - do not make up facts.',
+      messages: [{ role: 'user', content: prompt }],
+      model: 'claude-3-haiku-20240307',
+      max_tokens: 1500
     });
 
     if (!response.ok) {
@@ -3630,16 +3645,12 @@ Return ONLY a valid JSON object (no markdown):
 
   try {
     const workerUrl = 'https://historical-figure2-app.ultisim.workers.dev/';
-    const response = await fetch(workerUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        apiKey: config.apiKey,
-        system: 'You are an educational quiz grader. Return only valid JSON, no markdown.',
-        messages: [{ role: 'user', content: prompt }],
-        model: 'claude-3-haiku-20240307',
-        max_tokens: 300
-      })
+    const response = await anthropicMessages({
+      apiKey: config.apiKey,
+      system: 'You are an educational quiz grader. Return only valid JSON, no markdown.',
+      messages: [{ role: 'user', content: prompt }],
+      model: 'claude-3-haiku-20240307',
+      max_tokens: 300
     });
 
     const data = await response.json();
