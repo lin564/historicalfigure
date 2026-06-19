@@ -1,5 +1,10 @@
 # Historical Figure
 
+**▶ Live demo:** https://lin564.github.io/historicalfigure/ &nbsp;·&nbsp; **🚀 New here? Start with the [Setup Guide](SETUP_GUIDE.md)**
+
+> Bring your own API keys — they're entered in the app and stored only in your
+> browser. No keys are in this repository.
+
 An interactive web app for conversing with AI-voiced historical figures, with a
 Classroom mode. It uses the Claude (Anthropic) API for text and the ElevenLabs
 API for voice.
