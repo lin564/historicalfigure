@@ -67,18 +67,18 @@ stored only on your computer and never uploaded anywhere.
 
 ## Step 2 — Put the app on your GitHub account
 
-You want your **own** copy of the project. The easiest way is to copy this
-repository into your account.
+You want your **own** copy of the project. The easiest way is to fork the
+repository you're reading this in.
 
-1. Sign in to https://github.com.
-2. Go to the project's repository page (the owner can send you the link).
-3. Click the **Fork** button (top-right). On the next screen, click
-   **Create fork**. This makes a copy under *your* username:
+1. Sign in to https://github.com (use the same browser tab you opened this
+   repository in).
+2. On this repository's page, click the **Fork** button (top-right). On the
+   next screen, click **Create fork**. This makes a copy under *your* username:
    `https://github.com/<your-username>/historicalfigure`.
 
-> If forking isn't an option, the owner can instead add you as a collaborator,
-> or you can download the code as a ZIP (**Code → Download ZIP**), then create a
-> new repository and upload the files. Forking is simplest.
+> Prefer not to fork? You can instead download the code as a ZIP
+> (**Code → Download ZIP**), create a new repository in your own account, and
+> upload the files. Forking is simplest.
 
 ---
 
