@@ -96,6 +96,9 @@
       overlay.style.display = 'none';
     }
 
+    // Let the rest of the app open this panel (e.g. when a key is missing).
+    window.openApiKeyPanel = openModal;
+
     btn.addEventListener('click', openModal);
     overlay.querySelector('#byok-cancel').addEventListener('click', closeModal);
     overlay.addEventListener('click', function (e) {

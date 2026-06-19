@@ -112,6 +112,8 @@ This makes your copy a real, live website at no cost.
 4. *(Optional)* Paste your **ElevenLabs key** into the second box for voice.
 5. Click **Save**.
 
+![The "Your API Keys" panel: paste your Claude key in the first box, optionally your ElevenLabs key in the second, then click Save. Reopen anytime with the API Keys button in the bottom-right.](docs/img/screenshot-key-panel.png)
+
 That's it — you're ready to use the app.
 
 > **Where do the keys go?** They're saved only in *your* browser, on *your*
@@ -134,9 +136,14 @@ That's it — you're ready to use the app.
 ## Troubleshooting
 
 **The chat says nothing / nothing happens when I send a message.**
-Your Claude key is probably missing or wrong. Click **🔑 API Keys**
-(bottom-right), re-paste your `sk-ant-...` key, and Save. Also check in the
-Anthropic console that you have credit and haven't hit your spend limit.
+If no key is set, the figure now says so directly in the chat and reopens the
+key panel:
+
+![Chat showing the figure replying that it needs a Claude API key, with the API Keys button highlighted in the bottom-right.](docs/img/screenshot-missing-key.png)
+
+Click **🔑 API Keys** (bottom-right), re-paste your `sk-ant-...` key, and Save.
+Also check in the Anthropic console that you have credit and haven't hit your
+spend limit.
 
 **Voice doesn't play.**
 You need an ElevenLabs key (Step 1b). Add it via the 🔑 panel. Make sure your

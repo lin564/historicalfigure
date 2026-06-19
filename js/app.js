@@ -37,6 +37,13 @@ let state = {
 // existing response-parsing code below is unchanged.
 // ============================================
 
+// True only when a real Claude key has been entered (not blank, not the
+// committed placeholder). Used to warn the user instead of failing silently.
+function hasUsableClaudeKey() {
+  const k = (typeof config !== 'undefined' && config.apiKey) ? String(config.apiKey).trim() : '';
+  return k.length > 0 && k !== 'YOUR_ANTHROPIC_API_KEY_HERE';
+}
+
 // Anthropic Messages API. Body fields: model, messages, system, max_tokens,
 // temperature. The key is moved from the body into the x-api-key header.
 async function anthropicMessages(requestBody) {
@@ -1674,9 +1681,25 @@ async function sendMessage() {
     return;
   }
   
-  // If we're here, we're using API mode
+  // If we're here, we're using API mode.
+
+  // BYOK guard: if no real Claude key is set, tell the user (and open the key
+  // panel) instead of silently doing nothing.
+  if (!hasUsableClaudeKey()) {
+    if (loadingMessage && loadingMessage.parentNode) {
+      messagesContainer.removeChild(loadingMessage);
+    }
+    addMessage('bot',
+      '🔑 I need a Claude API key before I can answer. Click the "API Keys" ' +
+      'button in the bottom-right corner, paste your Anthropic key (it starts ' +
+      'with "sk-ant-"), then send your message again.',
+      { type: 'ai-generated' });
+    if (typeof window.openApiKeyPanel === 'function') window.openApiKeyPanel();
+    return;
+  }
+
   try {
-    console.log("Using Claude API via Cloudflare Worker");
+    console.log("Using Claude API (direct, BYOK)");
     // Prepare document context
     const documentContext = state.documents.map(doc => {
       return `Document: ${doc.name}\nContent: ${doc.content}\n\n`;
